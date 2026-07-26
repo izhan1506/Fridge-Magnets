@@ -1,165 +1,149 @@
-# Fridge Magnets App — Project Summary
+# Fridge Magnets — Project Summary
 
 ## Overview
-A social travel app where users snap photos from trips, pin them as "magnets" to a virtual fridge display, and discover fellow travelers on a world map. The app uses a skeuomorphic fridge interface as its core metaphor.
 
-## Core Features Implemented
+A social travel app where users snap photos from trips, background-remove them into "magnet" cutouts, pin them at randomized-but-persistent positions on a virtual skeuomorphic fridge door, and discover other travelers' fridges on a world map. Built with React 18, TypeScript, Vite, Tailwind CSS, and backed by Supabase for authentication, Postgres database, and photo storage.
 
-### 1. Splash & Onboarding
-- **Splash Screen** (Welcome.tsx): Warm amber→red radial aurora gradient background, bottom-anchored pitch. Copy: "Every trip becomes a magnet." with accent on "magnet."
-- **Auth Flow**: Email/password signup + Google OAuth
-- **Home Base Setup** (SetHomeBase.tsx): Map-based city picker for user's home location (used on the public map)
+## Core Features
+
+### 1. Authentication & Onboarding
+- **Email/password signup and login** via Supabase Auth.
+- **Google OAuth sign-in** (configurable, optional).
+- **Home base setup** (onboarding): users pick a home city via search or map to establish their profile's origin on the public map.
 
 ### 2. Fridge View (Main Screen)
-- **Skeuomorphic Fridge Illustration** (FridgeIllustration.tsx): Single-door satin white fridge with top trim, handle groove, base seam. No digital display panel.
-- **Magnet Placement**:
-  - Enlarged to 120px base (150% of original)
-  - Random scatter within door zone (top 5% to bottom 71% of fridge door)
-  - **Magnets can overlap** — like a real packed fridge
-  - Per-magnet resize at creation (0.6×–1.5× scale multiplier)
-  - Long-press (300ms) drag to reposition; positions persist per magnet (posX/posY normalized [0,1])
-  - Tap to open story viewer
+- **Skeuomorphic fridge illustration** (SVG, single-door design, 400×780 viewBox).
+- **Magnet placement**: photos are enlarged to 120px base, randomly scattered within the fridge door zone (top 5%–71% of the door height), with per-magnet random rotation (±6°) and optional scale adjustment (0.6×–1.5×).
+- **Persistent positioning**: users long-press (300ms) to drag magnets; positions are persisted per magnet (`posX`/`posY`, normalized [0,1]).
+- **Story viewer**: tap a magnet to open full-screen photo carousel with:
+  - Auto-advance every 4.5s between magnets.
+  - Hold-to-pause on Instagram embeds (posts/Reels only; stories cannot embed).
+  - Blur-to-sharp entrance animation on photos.
+  - Keyboard navigation (Esc/arrows).
 
-- **Story Viewer** (StoryViewer.tsx): 
-  - Full-bleed display of magnet photo
-  - Hold-to-pause on Instagram iframe embeds (posts/Reels only; stories cannot embed)
-  - Carousel swipe through magnets
-  - Blur-to-sharp entrance animation on photos
-
-- **Magnet Settings** (MagnetSettings.tsx):
-  - Edit Instagram link (post/Reel embeds play inline)
-  - Delete magnet with confirmation dialog
-  - Styled with glass morphism design language
-
-### 3. Add Magnet Flow (AddMagnet.tsx)
-- Camera capture or photo upload (background removal via API)
-- Resize preview (0.6×–1.5× scale) with live slider before saving
-- Auto-detect location via GPS (fallback to manual entry)
-- Persist city, country, caption, Instagram link, and scale
+### 3. Add Magnet Flow
+- **Camera capture or photo upload**: in-browser background removal via `@imgly/background-removal` (WASM, no API calls except asset fetch).
+- **Resize preview**: live slider to adjust magnet scale before saving (0.6×–1.5×).
+- **Auto-detect location**: via geolocation API with fallback to manual city entry (reverse geocoding via free OpenStreetMap Nominatim API).
+- **Photo upload**: processed image is uploaded to Supabase Storage at `magnet-photos/{userId}/{magnetId}.png`; public URL is stored in the database.
+- **Instagram link**: optional post/Reel embed (stories blocked by IG).
 
 ### 4. Map & Discovery
-- **WorldMap** (MapScreen.tsx): Leaflet-based map showing all public fridges and their locations
-- Toggle between Fridge and Map views (GlassTabNav)
-- Click magnet on map to visit another user's fridge (read-only, no drag)
+- **MapLibre GL + react-map-gl**: real-time, interactive world map.
+- **Vector tiles**: free OpenFreeMap "Positron" style (no API key, no rate limits).
+- **Proximity clustering**: magnets grouped by ~1200km bins; click cluster or pin to preview a user's fridge.
+- **Public discovery**: only users with `map_public = true` appear on the map; their magnets are visible to everyone.
 
 ### 5. Settings & Profile
-- **Settings Screen** (SettingsScreen.tsx): Notification preferences, profile info, log out (destructive button with red fill)
-- **Other Fridges** (OtherFridge.tsx): Read-only view of shared fridges (dragging disabled)
+- **Profile management**: name, home city, email.
+- **Map privacy toggle**: `map_public` controls whether you appear on the world map.
+- **Magnets list**: view all your magnets; tap to edit Instagram link or delete (with confirmation).
+- **Sign out** (destructive red button).
 
 ### 6. UI & Design Language
-- **Glass Morphism**: Frosted white glass (`bg-white/15` + `border-white/30` + `backdrop-blur-[7px]`) for secondary buttons, nav, settings buttons
-- **Button Family**: Unified squircle shape (`rounded-2xl`, 16px radius) across all buttons
-  - `filled`: Orange primary fill (same as add-magnet button)
-  - `tonal`/`outline`: Frosted glass fill
-  - Destructive: Red fill with glass rim
-  - All with white glass rim
-- **Typography**: Anton (display, headings), Roboto (body text). All headings: Title Case (first letter of every word capitalized)
-- **Toast Notifications**: Now render inside the phone frame (absolute positioning, offset below status bar) instead of escaping to viewport
+- **Glass morphism**: frosted white glass buttons and nav elements (`bg-white/15`, `border-white/30`, `backdrop-blur-[7px]`).
+- **Squircle buttons**: all buttons use `rounded-2xl` (16px radius) for a modern, cohesive look.
+- **Typography**: Anton (headings, display), Roboto (body). All headings are Title Case.
+- **Toast notifications**: via Sonner, positioned inside the phone frame (absolute, offset below status bar).
+- **Phone frame wrapper**: fixed 402×874px (iPhone 17 Pro dimensions), centered on desktop via flexbox, no responsive redesign.
 
 ## Tech Stack
 
 ### Frontend
-- **React 18** + React Router v6 (SPA routing)
-- **TypeScript** (strict mode)
-- **Tailwind CSS** (utility-first styling)
-- **Framer Motion** (animations: spring curves, hold-to-pause, scale lifts)
-- **Sonner** (toast notifications, v2.0.3)
-- **Lucide Icons** (UI icons)
-- **Leaflet** + **React-Leaflet** (map component)
+- **React 18.3.1** with React Router 7.13.0 (SPA routing).
+- **TypeScript 5** (strict mode).
+- **Tailwind CSS 4** (utility-first, Vite plugin).
+- **Framer Motion 12** (`motion` package; spring curves, scale lifts, pause on hold).
+- **Sonner 2.0.3** (toast notifications, positioned inside phone frame).
+- **Lucide React** (22px icons, strokeWidth 2–2.5).
+- **MapLibre GL 5.24** + **react-map-gl 8.1** (map rendering, free tiles).
 
-### Services & APIs
-- **Firebase** (authentication, Firestore database)
-- **Reverse Geocoding** (city/country lookup from lat/lng)
-- **Background Removal API** (removes photo backgrounds for magnet cutouts)
-- **Instagram Embed API** (iframe embedding for posts/Reels)
+### Backend & Services
+- **Supabase** (Postgres database + Auth + Storage):
+  - **Profiles table**: user account info (id, name, email, home coordinates, home label, map_public flag).
+  - **Magnets table**: user-uploaded photos with metadata (city, country, lat/lng, caption, Instagram URL, photo URL, color, verified, rotation, scale, position).
+  - **Row Level Security (RLS)**: users can only read/update their own profile and magnets; public data is readable by everyone; private data never returned to other users' sessions.
+  - **Storage bucket** (`magnet-photos`): public bucket storing magnet photos at `{userId}/{magnetId}.png` paths; only owners can write/delete.
+  - **Auth trigger**: auto-creates a `profiles` row when a user signs up, mirroring their `auth.users` identity.
 
-### State Management
-- **Custom `useSession` hook** (React Context) for auth + fridge data
-- LocalStorage for offline magnet/profile cache
+### External APIs
+- **OpenStreetMap Nominatim** (reverse geocoding; free, no key, ~1 req/sec usage policy).
+- **Google OAuth** (sign-in provider, optional; requires Google Cloud OAuth client credentials).
+- **Instagram Embed API** (regex parsing to iframe URLs; posts and Reels only).
+
+### Build & Deployment
+- **Vite 6.3.5** (frontend build, HMR dev server).
+- **Vercel** (static SPA hosting with client-side route rewrite).
 
 ## Data Models
 
 ### Profile
 ```typescript
 {
-  id: string;
+  id: string;              // UUID, links to auth.users.id
   name: string;
   email: string;
   homeLat: number;
   homeLng: number;
-  homeLabel: string;
-  mapPublic: boolean;
+  homeLabel: string;       // e.g., "Mumbai, India"
+  mapPublic: boolean;      // true = visible on world map
 }
 ```
 
 ### Magnet
 ```typescript
 {
-  id: string;
-  userId: string;
+  id: string;              // UUID, auto-generated
+  userId: string;          // FK to profiles.id
   city: string;
   country: string;
   lat: number;
   lng: number;
   caption: string;
-  instagramUrl?: string; // post/Reel only; stories embed-blocked by IG
-  photoUrl: string; // data URL (cutout) or remote URL
-  color: MagnetColor; // placeholder before photo loads
-  verified: boolean; // has GPS coords
-  rotation: number; // ±6° random hand-placed rotation
-  scale?: number; // 0.6–1.5× multiplier, set at creation
-  posX?: number; // [0,1] normalized center position (persisted after drag)
-  posY?: number;
-  createdAt: number;
+  instagramUrl?: string;   // post/Reel embed URL (stories blocked)
+  photoUrl: string;        // HTTPS URL from Supabase Storage
+  color: MagnetColor;      // 'coral' | 'pink' | 'blue' | 'amber' | 'teal' | 'purple'
+  verified: boolean;       // true = GPS verified location
+  rotation: number;        // ±6° random hand-placed angle
+  scale?: number;          // 0.6–1.5× multiplier, user-set
+  posX?: number;           // [0,1] normalized center X, persisted
+  posY?: number;           // [0,1] normalized center Y, persisted
+  createdAt: number;       // milliseconds timestamp
 }
 ```
-
-### MagnetColor
-`"coral" | "pink" | "blue" | "amber" | "teal" | "purple"`
 
 ## Key Implementation Details
 
 ### Fridge Placement & Collision
-- **Door Zone**: 16% left, 5% top, 77% wide, 71% tall (of illustration bounding box)
-- **Random Placement**: Seeded PRNG (mulberry32 + hash) for deterministic, stable scatter
-- **Overlap Allowed**: No collision detection; magnets can stack freely
-- **Drag Bounds**: Clamped to half-box (rotated tile kept within door)
+- **Door zone**: 16% left, 5% top, 77% wide, 71% tall (% of illustration bounding box).
+- **Random placement**: seeded PRNG (mulberry32 + hash) for deterministic scatter. Once user drags a magnet, position persists in `posX`/`posY`.
+- **Overlap allowed**: no collision detection; magnets can stack freely like a real packed fridge.
 
 ### Magnet Rendering
-- Base size: 120px (1.5× scale on the old 80px)
-- Each magnet's actual size = `MAGNET_SIZE * (scale ?? 1)`
-- Rotation applied via CSS transform: `rotate(${rotation}deg)`
-- Tap-to-open uses motion scale lift (1→1.12) on long-press
+- **Base size**: 120px (previously 80px, upscaled 150%).
+- **Actual size**: `MAGNET_SIZE * (scale ?? 1)`.
+- **Rotation**: CSS `rotate(${rotation}deg)`.
+- **Tap-to-open**: Framer Motion scale lift (1→1.12) on long-press (300ms).
+
+### Photo Upload Flow (Supabase Storage)
+1. User captures/uploads photo.
+2. In-browser background removal (WASM, no network call except model asset fetch).
+3. Generate client-side UUID for magnet (`crypto.randomUUID()`).
+4. Upload Blob to `magnet-photos/{userId}/{magnetId}.png` via `supabase.storage.upload()`.
+5. Retrieve public URL via `getPublicUrl()`.
+6. Store URL in `Magnet.photoUrl` and save magnet record to DB.
+7. On delete: remove both DB row and Storage object.
 
 ### Story Viewer
-- Full-bleed image or iframe embed
-- Tap zones narrowed (10% edges for embeds vs. 30%/70% for photos) to allow iframe controls
-- Hold gesture pauses auto-advance on embeds
-- Blur-to-sharp animation on image load
+- Full-bleed image or iframe embed (Instagram posts/Reels).
+- Tap zones narrowed (10% edges for embeds, 30%/70% for photos) to allow iframe controls.
+- Hold-to-pause on embeds; auto-advance on photos (4.5s).
 
-### Toasts
-- Positioned inside frame (switched from viewport-fixed to frame-relative absolute)
-- Offset 58px below top (below status bar)
-- Scoped to frame via CSS: `[data-sonner-toaster] { position: absolute !important; }`
-
-## Design Language Specifics
-
-### Colors
-- **Primary (CTA)**: Orange (`var(--primary)`, app-dependent color token)
-- **Foreground**: Off-white/light gray on dark bg
-- **Muted**: Lower contrast text (descriptions, hints)
-- **Background**: Very dark (`#0a0a0a`-ish), high contrast for night mode
-
-### Spacing & Sizing
-- **Button radius**: `rounded-2xl` (16px, squircle shape)
-- **Nav radius**: `rounded-[21px]` (glass nav pill)
-- **Status bar clearance**: 58px (toasts, modals)
-- **Frame padding**: 8px–16px horizontal, varies by screen
-
-### Icons & Images
-- Lucide React for all icons (22px typical, strokeWidth 2–2.5)
-- Magnet photos: 120px base, rounded corners, drop shadow
-- Fridge illustration: SVG, viewBox 400×780, scaled to fit frame
+### Map & Discovery
+- Query all public profiles: `select * from profiles where map_public = true`.
+- Batch-fetch their magnets: `select * from magnets where user_id = any(:ids)`.
+- Cluster proximity (~1200km greedy bins).
+- Pin preview shows featured magnet (first verified, or newest).
 
 ## File Structure
 
@@ -172,84 +156,105 @@ src/
 │   │   │   ├── Auth.tsx
 │   │   │   ├── SetHomeBase.tsx
 │   │   │   ├── FridgeScreen.tsx
-│   │   │   ├── AddMagnet.tsx
-│   │   │   ├── MagnetSettings.tsx
+│   │   │   ├── FridgeView.tsx (shared fridge renderer)
+│   │   │   ├── OtherFridge.tsx
 │   │   │   ├── MapScreen.tsx
+│   │   │   ├── AddMagnet.tsx
 │   │   │   ├── SettingsScreen.tsx
-│   │   │   └── OtherFridge.tsx
-│   │   ├── chrome.tsx (M3Button, TextField, SearchBar)
+│   │   │   └── MagnetSettings.tsx
 │   │   ├── fridge.tsx (FridgeAppliance, MagnetTile)
-│   │   ├── glass-nav.tsx (GlassTabNav, GlassIconButton, BottomNavBar)
-│   │   ├── story-viewer.tsx (StoryViewer, carousel logic)
 │   │   ├── fridge-illustration.tsx (SVG fridge)
-│   │   ├── worldmap.tsx (Leaflet map wrapper)
-│   │   ├── layout.tsx (PhoneFrame wrapper, responsive)
-│   │   └── ui/ (Shadcn components)
+│   │   ├── story-viewer.tsx (carousel, embeds, hold-to-pause)
+│   │   ├── worldmap.tsx (MapLibre wrapper)
+│   │   ├── glass-nav.tsx (glass buttons, bottom nav)
+│   │   ├── chrome.tsx (M3-style inputs, buttons)
+│   │   ├── layout.tsx (PhoneFrame wrapper)
+│   │   ├── mappins.tsx (cluster bubbles, pin preview)
+│   │   └── ui/ (Radix UI + shadcn primitives)
 │   ├── lib/
-│   │   ├── session.ts (Context hook for auth + data)
+│   │   ├── supabase.ts (Supabase client)
+│   │   ├── store.ts (data layer; Supabase queries)
+│   │   ├── session.tsx (React Context; auth + magnet operations)
+│   │   ├── storage.ts (photo upload/delete helpers)
 │   │   ├── types.ts (Profile, Magnet, etc.)
-│   │   ├── skins.ts (colors, door zone, random color)
-│   │   ├── geo.ts (city search, reverse geocoding)
+│   │   ├── skins.ts (magnet colors, door geometry)
+│   │   ├── geo.ts (haversine, reverse geocoding, city search)
 │   │   ├── instagram.ts (embed URL parsing)
-│   │   └── bgRemoval.ts (background removal API)
+│   │   └── bgRemoval.ts (background removal wrapper)
 │   ├── styles/
-│   │   ├── index.css (imports all)
-│   │   ├── fonts.css (Anton + Roboto)
-│   │   ├── tailwind.css (Tailwind directives)
-│   │   ├── theme.css (heading capitalize, toaster absolute, checker, etc.)
-│   │   └── globals.css (CSS variables, theme tokens)
-│   ├── App.tsx (Router + Toaster)
-│   └── main.tsx (React root)
-└── package.json
+│   │   ├── index.css
+│   │   ├── globals.css (CSS variables, dark theme)
+│   │   ├── theme.css (headings, status bar, etc.)
+│   │   ├── tailwind.css
+│   │   └── fonts.css (Anton + Roboto)
+│   └── App.tsx (router + SessionProvider + Toaster)
+├── main.tsx (React root)
+├── vite-env.d.ts (Vite env typing)
+├── vite.config.ts
+├── package.json
+├── tsconfig.json
+├── vercel.json (SPA rewrite)
+├── .env.example
+└── supabase/
+    └── migrations/
+        ├── 0001_init.sql (schema + RLS + trigger)
+        └── 0002_storage.sql (storage policies)
+    └── seed.sql (3 demo fridges)
+└── docs/
+    └── DEPLOY.md (step-by-step Vercel + Supabase setup)
 ```
 
-## Dependencies (Key)
-```json
-{
-  "react": "^18",
-  "react-router": "^6",
-  "typescript": "^5",
-  "tailwindcss": "^3",
-  "motion": "^11", // Framer Motion
-  "sonner": "^2.0.3",
-  "leaflet": "^1.9",
-  "react-leaflet": "^4",
-  "firebase": "^9",
-  "lucide-react": "^latest"
-}
-```
+## Routes
 
-## Important Notes for React Native Port
+- `/welcome` — splash screen.
+- `/auth` — email/password + Google OAuth.
+- `/onboarding/home` — set home base (protected; redirects unonboarded users here).
+- `/fridge` — owner's fridge (main screen).
+- `/fridge/:userId` — read-only view of another user's fridge.
+- `/map` — world map of public fridges.
+- `/add` — add magnet flow.
+- `/settings` — profile + privacy settings.
+- `/settings/magnets` — magnet details / management.
 
-1. **Fridge Illustration**: Currently SVG. For RN, convert to React Native SVG or use `react-native-svg`.
-2. **Animations**: Framer Motion → React Native Animated / Reanimated.
-3. **Routing**: React Router → React Navigation.
-4. **Maps**: Leaflet → `react-native-maps`.
-5. **Storage**: LocalStorage → AsyncStorage (React Native).
-6. **Toast**: Sonner → Use react-native-toast-notifications or similar.
-7. **Styling**: Tailwind → StyleSheet / NativeWind (if using Expo).
-8. **Images**: Tailwind `bg-gradient-to-t` → LinearGradient from `react-native-linear-gradient`.
-9. **Long-press**: RN Pressable with onLongPress, similar timer logic.
-10. **Camera**: expo-camera for photo capture.
-11. **Gestures**: React Native Gesture Handler for drag/swipe.
+## Security & Privacy
 
-## URLs & Routes
-- `/welcome` — splash screen
-- `/auth` — auth flow
-- `/onboarding/home` — set home base
-- `/fridge` — main fridge screen (owned)
-- `/fridge/:userId` — read-only fridge (other user)
-- `/map` — world map discovery
-- `/add` — add magnet flow
-- `/settings` — profile & preferences
-- `/settings/magnets` — magnet details editor
+- **Row Level Security (RLS)** enforces access control at the database layer:
+  - Users can only create/read/update their own profile and magnets.
+  - Public profiles and their magnets are readable by anyone.
+  - Private profiles' data is never returned by any query, even if a session attempts to fetch it.
+- **Storage policies** allow public read (so photo URLs work universally) but owner-only write/delete.
+- **Google OAuth** is optional; email/password auth is always available.
+- **No email confirmation** required by default (can be enabled in Supabase settings for extra security, but adds friction to signup).
 
 ## Known Constraints
-- Instagram stories cannot be embedded (IG blocks them); only posts and Reels work
-- Background removal is API-based (not on-device)
-- Magnets overlap freely; no collision avoidance
-- Magnet photos are base64 data URLs or remote HTTP(S)
-- No offline sync; relies on Firebase real-time updates
 
-## Session Summary
-All requested features have been implemented and verified end-to-end. The app is production-ready for web. A React Native port would require re-implementing the UI layer and swapping web-specific libraries for mobile equivalents, but the business logic (data models, API calls, state management) can largely transfer as-is.
+- Instagram stories cannot be embedded (IG blocks them programmatically).
+- Background removal is client-side (WASM) — large photos may be slow on older devices.
+- Magnets overlap freely; no smart collision avoidance.
+- Map is live (no caching of public fridges list) — refreshing the page re-queries the DB.
+- Photo storage is Supabase Storage URLs; if you export the database to CSV, URLs remain valid as long as the bucket exists.
+
+## Production Readiness
+
+The app is **production-ready** after deploying to Vercel and Supabase (see `docs/DEPLOY.md`):
+- ✅ Real authentication (Supabase Auth + Google OAuth).
+- ✅ Real database (Postgres with Row Level Security).
+- ✅ Real file storage (Supabase Storage).
+- ✅ Cross-user data sharing (public fridges on world map).
+- ✅ Responsive to mobile (fixed 402×874 frame on all screens).
+- ✅ Static deployment (Vercel static hosting).
+- ✅ No API rate limits (local WASM for BG removal, Nominatim usage within policy, MapLibre/OpenFreeMap free tiles).
+
+## Future Enhancements
+
+- **Notifications**: real-time alerts when someone visits your fridge or adds a magnet in your area.
+- **Likes/views**: a counter on each magnet (not implemented; would require a `reactions` table).
+- **Fridge skins**: alternate fridge designs (currently just one SVG).
+- **PWA**: manifest + service worker for installability.
+- **Offline mode**: persist magnets locally and sync on reconnect.
+- **E2E tests**: Cypress/Playwright for full user workflows.
+- **Analytics**: track map views, signup source, etc.
+
+---
+
+**Last updated**: July 2026. Reflects Supabase backend integration and Vercel deployment setup.

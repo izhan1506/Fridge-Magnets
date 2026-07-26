@@ -7,6 +7,7 @@ import { useSession } from "../../lib/session";
 import { reverseGeocode } from "../../lib/geo";
 import { removeMagnetBackground, blobToDataUrl } from "../../lib/bgRemoval";
 import { randomMagnetColor } from "../../lib/skins";
+import { uploadMagnetPhoto } from "../../lib/storage";
 import type { Magnet } from "../../lib/types";
 
 type Step =
@@ -27,6 +28,7 @@ export function AddMagnet() {
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [rawBlob, setRawBlob] = useState<Blob | null>(null);
   const [cutout, setCutout] = useState<string | null>(null);
+  const [cutoutBlob, setCutoutBlob] = useState<Blob | null>(null);
   const [scale, setScale] = useState(1);
   const [city, setCity] = useState("");
   const [country, setCountry] = useState("");
@@ -116,6 +118,7 @@ export function AddMagnet() {
     try {
       const out = await removeMagnetBackground(blob);
       setCutout(await blobToDataUrl(out));
+      setCutoutBlob(out);
       setStep("cutout");
     } catch {
       setStep("processing-failed");
@@ -124,26 +127,42 @@ export function AddMagnet() {
 
   // ── 5. Save ──
   async function save() {
-    if (!profile) return;
-    const magnet: Magnet = {
-      id: `m-${Date.now()}`,
-      userId: profile.id,
-      city: city.trim() || "Somewhere",
-      country: country.trim(),
-      lat: coords?.lat ?? profile.homeLat,
-      lng: coords?.lng ?? profile.homeLng,
-      caption: caption.trim(),
-      instagramUrl: instagram.trim() || undefined,
-      photoUrl: cutout ?? "",
-      color: randomMagnetColor(),
-      verified: !!coords,
-      rotation: Math.random() * 12 - 6,
-      scale,
-      createdAt: Date.now(),
-    };
-    await addMagnet(magnet);
-    setSaved(magnet);
-    setStep("saved");
+    if (!profile || !cutoutBlob) return;
+
+    try {
+      setStep("processing");
+
+      // Generate client-side UUID for the magnet
+      const magnetId = crypto.randomUUID();
+
+      // Upload to Supabase Storage
+      const photoUrl = await uploadMagnetPhoto(profile.id, magnetId, cutoutBlob);
+
+      // Create magnet record with real Storage URL
+      const magnet: Magnet = {
+        id: magnetId,
+        userId: profile.id,
+        city: city.trim() || "Somewhere",
+        country: country.trim(),
+        lat: coords?.lat ?? profile.homeLat,
+        lng: coords?.lng ?? profile.homeLng,
+        caption: caption.trim(),
+        instagramUrl: instagram.trim() || undefined,
+        photoUrl,
+        color: randomMagnetColor(),
+        verified: !!coords,
+        rotation: Math.random() * 12 - 6,
+        scale,
+        createdAt: Date.now(),
+      };
+
+      await addMagnet(magnet);
+      setSaved(magnet);
+      setStep("saved");
+    } catch (e) {
+      toast.error("Couldn't save your photo — try again");
+      setStep("processing-failed");
+    }
   }
 
   const close = () => nav("/fridge");

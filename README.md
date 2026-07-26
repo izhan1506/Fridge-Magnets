@@ -1,22 +1,37 @@
 
-  # Fridge
+# Fridge Magnets
 
-  A mobile-first travel memory app: every trip becomes a digital fridge
-  magnet, pinned to your fridge and to a shared world map. Originally
-  generated from the Figma project at
-  https://www.figma.com/design/qlNPbfhUuUBshNHHyn8uuH/App-Creation.
+A mobile-first travel memory app: every trip becomes a digital fridge magnet, pinned to your virtual fridge and to a shared world map.
 
-  The map runs on MapLibre GL + OpenFreeMap vector tiles (free, no API key).
+**Tech Stack**: React 18 + TypeScript + Vite + Tailwind CSS, with Supabase for auth, database, and storage. MapLibre GL + OpenFreeMap for maps (free, no API keys).
 
-  ## Running the code
+## Local Development
 
-  Run `npm i` to install the dependencies.
+1. Copy `.env.example` to `.env` and fill in your Supabase credentials:
+   ```bash
+   cp .env.example .env
+   ```
 
-  Run `npm run dev` to start the development server.
+2. Install and run:
+   ```bash
+   npm install
+   npm run dev
+   ```
 
-  ## Deploying
+3. Open [http://localhost:5173](http://localhost:5173) and sign up.
 
-  Static build, no backend or API keys required. `npm run build` outputs
-  `dist/`. On Vercel, the included `vercel.json` adds the SPA rewrite needed
-  so client-side routes (e.g. `/map`, `/fridge`) don't 404 on refresh.
+## Deploying to Vercel + Supabase
+
+See **[`docs/DEPLOY.md`](./docs/DEPLOY.md)** for step-by-step instructions:
+- Create a Supabase project and run migrations.
+- Set up the Storage bucket for magnet photos.
+- Configure Google OAuth (optional).
+- Deploy to Vercel and link environment variables.
+
+## Scripts
+
+- `npm run dev` — Start dev server on http://localhost:5173.
+- `npm run build` — Build for production to `dist/`.
+- `npm run preview` — Preview the production build locally.
+- `npm run typecheck` — Run TypeScript type checking.
   

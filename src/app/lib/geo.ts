@@ -1,20 +1,4 @@
-/** Geo helpers: equirectangular projection + light reverse geocoding. */
-
-/** Project lat/lng to a 0..1 position on an equirectangular map. */
-export function project(lat: number, lng: number): { x: number; y: number } {
-  return {
-    x: (lng + 180) / 360,
-    y: (90 - lat) / 180,
-  };
-}
-
-/** Inverse of `project` — map 0..1 position back to lat/lng. */
-export function unproject(x: number, y: number): { lat: number; lng: number } {
-  return {
-    lng: x * 360 - 180,
-    lat: 90 - y * 180,
-  };
-}
+/** Geo helpers: haversine distance + reverse geocoding. */
 
 export function haversine(aLat: number, aLng: number, bLat: number, bLng: number): number {
   const R = 6371;

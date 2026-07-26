@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import type { Magnet, Profile } from "./types";
 import * as store from "./store";
+import { supabase } from "./supabase";
 
 interface SessionValue {
   profile: Profile | null;
@@ -32,11 +33,33 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   }
 
   useEffect(() => {
+    let mounted = true;
+
+    // Get initial session
     (async () => {
       const p = await store.getSession();
-      await loadFor(p);
-      setLoading(false);
+      if (mounted) {
+        await loadFor(p);
+        setLoading(false);
+      }
     })();
+
+    // Subscribe to auth state changes (needed for Google OAuth redirect)
+    const { data: subscription } = supabase.auth.onAuthStateChange(
+      async (_event, session) => {
+        if (mounted) {
+          const p = session?.user
+            ? await store.getSession()
+            : null;
+          await loadFor(p);
+        }
+      },
+    );
+
+    return () => {
+      mounted = false;
+      subscription?.subscription.unsubscribe();
+    };
   }, []);
 
   const value = useMemo<SessionValue>(
@@ -69,7 +92,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         setMagnets((prev) => [magnet, ...prev]);
       },
       async removeMagnet(id) {
-        await store.deleteMagnet(id);
+        if (!profile) return;
+        await store.deleteMagnet(profile.id, id);
         setMagnets((prev) => prev.filter((m) => m.id !== id));
       },
       async updateMagnet(id, patch) {
