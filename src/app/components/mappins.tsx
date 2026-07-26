@@ -1,0 +1,111 @@
+import { motion } from "motion/react";
+import type { Magnet, PublicFridge } from "../lib/types";
+import { MAGNET_COLORS } from "../lib/skins";
+import { ImageWithFallback } from "./figma/ImageWithFallback";
+import { M3Button } from "./chrome";
+
+/**
+ * The fridge's most popular magnet — there's no view/like counter yet, so
+ * "most seen" is approximated as the newest verified magnet (falling back to
+ * the newest magnet overall; both lists already arrive sorted by recency).
+ */
+function featuredMagnet(fridge: PublicFridge): Magnet | undefined {
+  return fridge.magnets.find((m) => m.verified) ?? fridge.magnets[0];
+}
+
+/** Photo-card tail: a rotated square whose corner reads as a downward point. */
+function PinTail({ color = "white" }: { color?: string }) {
+  return (
+    <span
+      className="mt-[-6px] h-3.5 w-3.5 rotate-45 rounded-[3px] shadow-[2px_2px_3px_rgba(0,0,0,0.12)]"
+      style={{ backgroundColor: color }}
+    />
+  );
+}
+
+/** Home-base marker: the fridge's most popular magnet photo on a rounded photo card. */
+export function HomePin({ fridge, onClick }: { fridge: PublicFridge; onClick: () => void }) {
+  const top = featuredMagnet(fridge);
+  return (
+    <motion.button
+      onClick={onClick}
+      whileHover={{ scale: 1.08, y: -2 }}
+      whileTap={{ scale: 0.94 }}
+      className="relative flex flex-col items-center"
+    >
+      <span
+        className="h-16 w-16 overflow-hidden rounded-[20px] border-[3px] border-white shadow-[0_10px_20px_rgba(0,0,0,0.28)]"
+        style={{ backgroundColor: top ? MAGNET_COLORS[top.color] : "var(--magnet-blue)" }}
+      >
+        {top?.photoUrl && (
+          <ImageWithFallback
+            src={top.photoUrl}
+            alt={`${fridge.profile.name}'s fridge`}
+            className="h-full w-full object-cover"
+          />
+        )}
+      </span>
+      <PinTail />
+    </motion.button>
+  );
+}
+
+/** Cluster bubble shown when a dense area is zoomed out — same photo-card family as HomePin. */
+export function ClusterBubble({ count, onClick }: { count: number; onClick: () => void }) {
+  return (
+    <motion.button
+      onClick={onClick}
+      whileHover={{ scale: 1.08, y: -2 }}
+      whileTap={{ scale: 0.94 }}
+      className="relative flex flex-col items-center"
+    >
+      <span className="flex h-16 w-16 flex-col items-center justify-center rounded-[20px] border-[3px] border-white bg-primary text-primary-foreground shadow-[0_10px_20px_rgba(0,0,0,0.28)]">
+        <span className="leading-none">{count}</span>
+        <span className="text-[11px] leading-none opacity-90">fridges</span>
+      </span>
+      <PinTail color="var(--primary)" />
+    </motion.button>
+  );
+}
+
+/** Small preview card shown on pin tap. */
+export function PinPreviewCard({
+  fridge,
+  onView,
+  onClose,
+}: {
+  fridge: PublicFridge;
+  onView: () => void;
+  onClose: () => void;
+}) {
+  return (
+    <motion.div
+      initial={{ y: 24, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      exit={{ y: 24, opacity: 0 }}
+      className="absolute inset-x-4 bottom-24 z-20 rounded-3xl bg-card p-4 shadow-2xl"
+    >
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="font-fridge">{fridge.profile.name}'s fridge</h3>
+          <p className="text-muted-foreground">{fridge.profile.homeLabel}</p>
+        </div>
+        <button onClick={onClose} className="text-muted-foreground">✕</button>
+      </div>
+      <div className="mt-3 flex gap-2 overflow-hidden">
+        {fridge.magnets.slice(0, 4).map((m) => (
+          <span
+            key={m.id}
+            className="h-14 w-14 shrink-0 overflow-hidden rounded-xl"
+            style={{ backgroundColor: MAGNET_COLORS[m.color], rotate: `${m.rotation}deg` }}
+          >
+            {m.photoUrl && <ImageWithFallback src={m.photoUrl} alt={m.city} className="h-full w-full object-cover" />}
+          </span>
+        ))}
+      </div>
+      <M3Button full className="mt-4" onClick={onView}>
+        View full fridge
+      </M3Button>
+    </motion.div>
+  );
+}

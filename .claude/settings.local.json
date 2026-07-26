@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install *)",
+      "Bash(pkill -f \"vite\")",
+      "Bash(npx --yes playwright install chromium)",
+      "Bash(xargs -I{} sh -c 'echo ==={}===; cat -n \"{}\"')",
+      "Bash(supabase --version)",
+      "Bash(npm --version)",
+      "Bash(git --version)",
+      "Bash(git init *)",
+      "Bash(git config *)",
+      "Bash(git add *)",
+      "Bash(git commit *)"
+    ]
+  }
+}

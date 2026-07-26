@@ -1,0 +1,18 @@
+@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Anton&display=swap");
+
+/* One body/UI typeface app-wide, plus a bold condensed display face for headings. */
+:root {
+  --font-chrome: "Roboto", system-ui, -apple-system, sans-serif;
+  --font-heading: "Anton", "Roboto", system-ui, sans-serif;
+  --font-fridge: var(--font-heading);
+}
+
+html,
+body {
+  font-family: var(--font-chrome);
+}
+
+.font-fridge {
+  font-family: var(--font-fridge);
+}
