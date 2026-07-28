@@ -19,6 +19,7 @@ type Step =
   | "processing-failed"
   | "cutout"
   | "details"
+  | "trip-photo"
   | "saved";
 
 export function AddMagnet() {
@@ -34,6 +35,7 @@ export function AddMagnet() {
   const [country, setCountry] = useState("");
   const [caption, setCaption] = useState("");
   const [instagram, setInstagram] = useState("");
+  const [tripPhoto, setTripPhoto] = useState<string | null>(null);
   const [saved, setSaved] = useState<Magnet | null>(null);
 
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -149,6 +151,7 @@ export function AddMagnet() {
         caption: caption.trim(),
         instagramUrl: instagram.trim() || undefined,
         photoUrl,
+        tripPhotoUrl: tripPhoto || undefined,
         color: randomMagnetColor(),
         verified: !!coords,
         rotation: Math.random() * 12 - 6,
@@ -333,11 +336,61 @@ export function AddMagnet() {
           />
         </div>
         <div className="mt-auto space-y-2 pt-8">
-          <M3Button full onClick={save}>
-            Save to fridge
+          <M3Button full onClick={() => setStep("trip-photo")}>
+            Add trip photo
           </M3Button>
           <button className="w-full text-center text-muted-foreground" onClick={() => setInstagram("")}>
             Skip the Instagram link
+          </button>
+        </div>
+      </div>
+    );
+
+  if (step === "trip-photo")
+    return (
+      <div className="flex h-full flex-col px-6 pb-8 pt-10">
+        <h1>Add a photo from the trip</h1>
+        <p className="mt-1 text-muted-foreground">Optional — this shows in the story, not on the magnet.</p>
+        <div className="my-6 flex flex-1 items-center justify-center overflow-hidden rounded-3xl checker">
+          {tripPhoto ? (
+            <img
+              src={tripPhoto}
+              alt="Trip photo preview"
+              className="max-h-full max-w-full object-contain"
+            />
+          ) : (
+            <div className="text-center text-muted-foreground">
+              <p>No photo selected yet</p>
+            </div>
+          )}
+        </div>
+        <div className="mt-auto space-y-2 pt-8">
+          <label className="block w-full">
+            <M3Button full icon={<ImageUp size={18} />}>
+              Upload photo
+            </M3Button>
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  const reader = new FileReader();
+                  reader.onload = (event) => {
+                    const dataUrl = event.target?.result as string;
+                    setTripPhoto(dataUrl);
+                  };
+                  reader.readAsDataURL(file);
+                }
+              }}
+            />
+          </label>
+          <M3Button full variant="tonal" onClick={save}>
+            Save to fridge
+          </M3Button>
+          <button className="w-full text-center text-muted-foreground" onClick={() => setStep("details")}>
+            Back
           </button>
         </div>
       </div>

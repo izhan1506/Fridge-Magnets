@@ -111,7 +111,7 @@ export function StoryViewer({
   if (!magnet) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] bg-black">
+    <div className="absolute inset-0 z-[100] bg-black">
       {/* segmented progress bar — skipped over an embed, which plays edge-to-edge with no chrome of ours on top */}
       {!embedUrl && (
         <div className="absolute inset-x-3 top-3 z-10 flex gap-1">
@@ -168,6 +168,16 @@ export function StoryViewer({
           allow="autoplay; encrypted-media"
           loading="lazy"
         />
+      ) : magnet.tripPhotoUrl ? (
+        <motion.img
+          key={magnet.id}
+          src={magnet.tripPhotoUrl}
+          alt={`Trip photo from ${magnet.city}`}
+          className="absolute inset-0 h-full w-full object-cover"
+          initial={{ opacity: 0, filter: "blur(18px)" }}
+          animate={{ opacity: 1, filter: "blur(0px)" }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
+        />
       ) : (
         <div className="absolute inset-0 flex items-center justify-center">
           {magnet.photoUrl && (
@@ -176,6 +186,7 @@ export function StoryViewer({
               src={magnet.photoUrl}
               alt={`Magnet from ${magnet.city}`}
               className="max-h-full max-w-full object-contain"
+              style={{ transform: `scale(${magnet.scale ?? 1})` }}
               initial={{ opacity: 0, filter: "blur(18px)" }}
               animate={{ opacity: 1, filter: "blur(0px)" }}
               transition={{ duration: 0.4, ease: "easeOut" }}

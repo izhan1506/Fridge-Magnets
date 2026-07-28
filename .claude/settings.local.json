@@ -1,12 +1,24 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git remote *)",
-      "Bash(git branch *)",
+      "Bash(git *)",
+      "Bash(gh *)",
+      "Bash(ssh*)",
+      "Bash(mkdir *)",
+      "Bash(chmod *)",
+      "Bash(cat *)",
+      "Bash(ls *)",
+      "Bash(rm *)",
+      "Read",
+      "Write",
+      "Edit",
+      "Skill(update-config)",
+      "Skill(update-config:*)",
       "Bash(git push *)",
-      "Bash(gh --version)",
+      "Bash(npm list *)",
       "Bash(git add *)",
-      "Bash(git commit *)"
+      "Bash(git commit *)",
+      "Bash(git commit -m 'Add trip photo feature and fix mobile story viewer positioning *)"
     ]
   }
 }

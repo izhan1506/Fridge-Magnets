@@ -27,6 +27,8 @@ export interface Magnet {
   instagramUrl?: string;
   /** Data URL or remote URL of the background-removed cutout. */
   photoUrl: string;
+  /** Optional trip photo displayed full-screen in the story viewer. */
+  tripPhotoUrl?: string;
   /** Placeholder accent color used before a photo exists. */
   color: MagnetColor;
   verified: boolean;
