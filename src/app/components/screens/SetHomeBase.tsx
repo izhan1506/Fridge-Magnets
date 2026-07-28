@@ -33,7 +33,7 @@ export function SetHomeBase() {
           <button onClick={() => nav(-1)} className="rounded-xl border border-white/30 bg-white/15 p-2 text-white backdrop-blur-[7px] transition hover:bg-white/25">
             <ArrowLeft size={20} />
           </button>
-          <h2>Set your home base</h2>
+          <h2 className="text-foreground font-bold">Set your home base</h2>
         </div>
         <SearchBar
           placeholder="Search for your city"
