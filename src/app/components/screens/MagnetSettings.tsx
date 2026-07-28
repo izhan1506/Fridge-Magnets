@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import { ArrowLeft, Link, MoreVertical, Trash2 } from "lucide-react";
+import { ArrowLeft, Link, MoreVertical, Trash2, ImageUp, X } from "lucide-react";
 import { toast } from "sonner";
 import { useSession } from "../../lib/session";
 import { MAGNET_COLORS } from "../../lib/skins";
@@ -74,6 +74,8 @@ export function MagnetSettings() {
           <div className="space-y-5">
             <InstagramLinkForm magnet={editing} onDone={() => setEditing(null)} />
             <div className="h-px bg-border" />
+            <TripPhotoForm magnet={editing} onDone={() => setEditing(null)} />
+            <div className="h-px bg-border" />
             <DeleteMagnetButton magnet={editing} onDeleted={() => setEditing(null)} />
           </div>
         )}
@@ -134,6 +136,79 @@ function InstagramLinkForm({ magnet, onDone }: { magnet: Magnet; onDone: () => v
           Delete Instagram link
         </button>
       )}
+    </div>
+  );
+}
+
+function TripPhotoForm({ magnet, onDone }: { magnet: Magnet; onDone: () => void }) {
+  const { updateMagnet } = useSession();
+  const [preview, setPreview] = useState(magnet.tripPhotoUrl ?? null);
+  const [busy, setBusy] = useState(false);
+
+  async function save() {
+    setBusy(true);
+    await updateMagnet(magnet.id, { tripPhotoUrl: preview || undefined });
+    setBusy(false);
+    toast.success(preview ? "Trip photo added" : "Trip photo removed");
+    onDone();
+  }
+
+  async function remove() {
+    setBusy(true);
+    setPreview(null);
+    await updateMagnet(magnet.id, { tripPhotoUrl: undefined });
+    setBusy(false);
+    toast.success("Trip photo removed");
+    onDone();
+  }
+
+  return (
+    <div>
+      <p className="mb-3 text-sm font-semibold">Trip photo</p>
+      {preview ? (
+        <div className="mb-3 overflow-hidden rounded-2xl bg-muted">
+          <img src={preview} alt="Trip photo preview" className="h-40 w-full object-cover" />
+        </div>
+      ) : (
+        <p className="mb-3 text-sm text-muted-foreground">No trip photo yet</p>
+      )}
+      <div className="space-y-2">
+        <label className="block w-full">
+          <M3Button full icon={<ImageUp size={18} />}>
+            {preview ? "Change photo" : "Add photo"}
+          </M3Button>
+          <input
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                  const dataUrl = event.target?.result as string;
+                  setPreview(dataUrl);
+                };
+                reader.readAsDataURL(file);
+              }
+            }}
+          />
+        </label>
+        {preview && (
+          <button
+            onClick={() => setPreview(null)}
+            className="flex h-11 w-full items-center justify-center gap-2 rounded-2xl border border-destructive/40 text-destructive transition hover:bg-destructive/10"
+          >
+            <X size={18} />
+            Remove
+          </button>
+        )}
+        {preview !== magnet.tripPhotoUrl && (
+          <M3Button full variant="tonal" onClick={save} disabled={busy}>
+            {busy ? "Saving…" : "Save"}
+          </M3Button>
+        )}
+      </div>
     </div>
   );
 }
