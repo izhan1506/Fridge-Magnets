@@ -18,7 +18,8 @@
       "Bash(npm list *)",
       "Bash(git add *)",
       "Bash(git commit *)",
-      "Bash(git commit -m 'Add trip photo feature and fix mobile story viewer positioning *)"
+      "Bash(git commit -m 'Add trip photo feature and fix mobile story viewer positioning *)",
+      "Bash(npm run *)"
     ]
   }
 }
