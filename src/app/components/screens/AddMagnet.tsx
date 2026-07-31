@@ -162,9 +162,12 @@ export function AddMagnet() {
 
       await addMagnet(magnet);
       setSaved(magnet);
+      if (tripPhoto) {
+        toast("Magnet saved with trip photo");
+      }
       setStep("saved");
     } catch (e) {
-      toast.error("Couldn't save your photo — try again");
+      toast.error("Couldn't save your magnet — try again");
       setStep("processing-failed");
     }
   }
@@ -446,8 +449,11 @@ export function AddMagnet() {
             Upload photo
           </M3Button>
           <M3Button full variant="tonal" onClick={save}>
-            Save to fridge
+            {tripPhoto ? "Save magnet with trip photo" : "Save magnet without photo"}
           </M3Button>
+          <button className="w-full text-center text-muted-foreground" onClick={() => setStep("details")}>
+            Back
+          </button>
         </div>
       </div>
     );
