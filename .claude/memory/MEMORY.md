@@ -1,2 +1,3 @@
 - [Project Status](project_status.md) — Fridge Magnets V2 (React/Supabase/Vercel), live deployment, latest features
 - [User Preferences](user_preferences.md) — Direct/efficient communication style, action-oriented
+- [Database Schema](database_schema.md) — Critical fields fixed: trip_photo_url, RLS policies, setup checklist
