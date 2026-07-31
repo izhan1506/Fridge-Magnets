@@ -19,7 +19,6 @@ type Step =
   | "processing-failed"
   | "cutout"
   | "details"
-  | "trip-photo"
   | "saved";
 
 export function AddMagnet() {
@@ -320,7 +319,7 @@ export function AddMagnet() {
         <p className="mt-1 text-muted-foreground">
           {coords ? "Auto-filled from your location — edit anything." : "Tell us where this is from."}
         </p>
-        <div className="mt-6 space-y-4">
+        <div className="mt-6 flex-1 space-y-4 overflow-y-auto">
           <div className="flex gap-3">
             <TextField label="City" value={city} onChange={(e) => setCity(e.target.value)} className="flex-1" />
             <TextField label="Country" value={country} onChange={(e) => setCountry(e.target.value)} className="flex-1" />
@@ -338,76 +337,37 @@ export function AddMagnet() {
             onChange={(e) => setInstagram(e.target.value)}
             placeholder="https://instagram.com/p/…"
           />
-        </div>
-        <input
-          ref={tripPhotoInputRef}
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={async (e) => {
-            try {
-              const file = e.target.files?.[0];
-              if (file) {
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                  try {
-                    const dataUrl = event.target?.result as string;
-                    setTripPhoto(dataUrl);
-                    setStep("trip-photo");
-                  } catch (err) {
-                    toast.error("Failed to load photo");
-                  }
-                };
-                reader.readAsDataURL(file);
-              }
-            } catch (err) {
-              toast.error("Failed to select photo");
-            }
-          }}
-        />
-        <div className="mt-auto space-y-2 pt-8">
-          <M3Button
-            full
-            icon={<ImageUp size={18} />}
-            onClick={() => {
-              try {
-                tripPhotoInputRef.current?.click();
-              } catch (err) {
-                toast.error("Could not open gallery");
-              }
-            }}
-          >
-            Add trip photo
-          </M3Button>
-          <button className="w-full text-center text-muted-foreground" onClick={() => setInstagram("")}>
-            Skip the Instagram link
-          </button>
-        </div>
-      </div>
-    );
-
-  if (step === "trip-photo")
-    return (
-      <div className="flex h-full flex-col px-6 pb-8 pt-10">
-        <div className="mb-6 flex items-center gap-3">
-          <button onClick={() => setStep("details")} className="rounded-xl border border-white/30 bg-white/15 p-2 backdrop-blur-[7px] transition hover:bg-white/25">
-            <ArrowLeft size={22} />
-          </button>
-          <h1>Add a photo from the trip</h1>
-        </div>
-        <p className="text-muted-foreground">Optional — this shows in the story, not on the magnet.</p>
-        <div className="my-6 flex flex-1 items-center justify-center overflow-hidden rounded-3xl checker">
-          {tripPhoto ? (
-            <img
-              src={tripPhoto}
-              alt="Trip photo preview"
-              className="max-h-full max-w-full object-contain"
-            />
-          ) : (
-            <div className="text-center text-muted-foreground">
-              <p>No photo selected yet</p>
-            </div>
-          )}
+          <div className="space-y-2">
+            <p className="text-sm font-semibold">Trip photo</p>
+            <p className="text-xs text-muted-foreground">Optional — this shows in the story, not on the magnet</p>
+            {tripPhoto && (
+              <div className="overflow-hidden rounded-2xl bg-muted">
+                <img src={tripPhoto} alt="Trip photo preview" className="h-32 w-full object-cover" />
+              </div>
+            )}
+            <M3Button
+              full
+              icon={<ImageUp size={18} />}
+              onClick={() => {
+                try {
+                  tripPhotoInputRef.current?.click();
+                } catch (err) {
+                  toast.error("Could not open gallery");
+                }
+              }}
+            >
+              {tripPhoto ? "Change trip photo" : "Add trip photo"}
+            </M3Button>
+            {tripPhoto && (
+              <button
+                onClick={() => setTripPhoto(null)}
+                className="flex h-10 w-full items-center justify-center gap-2 rounded-2xl border border-destructive/40 text-destructive transition hover:bg-destructive/10 text-sm"
+              >
+                <X size={16} />
+                Remove
+              </button>
+            )}
+          </div>
         </div>
         <input
           ref={tripPhotoInputRef}
@@ -434,26 +394,10 @@ export function AddMagnet() {
             }
           }}
         />
-        <div className="mt-auto space-y-2 pt-8">
-          <M3Button
-            full
-            icon={<ImageUp size={18} />}
-            onClick={() => {
-              try {
-                tripPhotoInputRef.current?.click();
-              } catch (err) {
-                toast.error("Could not open gallery");
-              }
-            }}
-          >
-            Upload photo
+        <div className="mt-8 space-y-2 pt-8">
+          <M3Button full onClick={save}>
+            Save to fridge
           </M3Button>
-          <M3Button full variant="tonal" onClick={save}>
-            {tripPhoto ? "Save magnet with trip photo" : "Save magnet without photo"}
-          </M3Button>
-          <button className="w-full text-center text-muted-foreground" onClick={() => setStep("details")}>
-            Back
-          </button>
         </div>
       </div>
     );
