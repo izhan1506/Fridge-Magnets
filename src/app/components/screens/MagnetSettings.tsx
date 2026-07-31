@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router";
 import { ArrowLeft, Link, MoreVertical, Trash2, ImageUp, X } from "lucide-react";
 import { toast } from "../../lib/toast";
@@ -172,6 +172,7 @@ function TripPhotoForm({ magnet, onDone }: { magnet: Magnet; onDone: () => void 
   const { updateMagnet } = useSession();
   const [preview, setPreview] = useState(magnet.tripPhotoUrl ?? null);
   const [busy, setBusy] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   async function save() {
     setBusy(true);
@@ -201,27 +202,30 @@ function TripPhotoForm({ magnet, onDone }: { magnet: Magnet; onDone: () => void 
         <p className="mb-3 text-sm text-muted-foreground">No trip photo yet</p>
       )}
       <div className="space-y-2">
-        <label className="block w-full">
-          <M3Button full icon={<ImageUp size={18} />}>
-            {preview ? "Change photo" : "Add photo"}
-          </M3Button>
-          <input
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={async (e) => {
-              const file = e.target.files?.[0];
-              if (file) {
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                  const dataUrl = event.target?.result as string;
-                  setPreview(dataUrl);
-                };
-                reader.readAsDataURL(file);
-              }
-            }}
-          />
-        </label>
+        <M3Button
+          full
+          icon={<ImageUp size={18} />}
+          onClick={() => fileInputRef.current?.click()}
+        >
+          {preview ? "Change photo" : "Add photo"}
+        </M3Button>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={async (e) => {
+            const file = e.target.files?.[0];
+            if (file) {
+              const reader = new FileReader();
+              reader.onload = (event) => {
+                const dataUrl = event.target?.result as string;
+                setPreview(dataUrl);
+              };
+              reader.readAsDataURL(file);
+            }
+          }}
+        />
         {preview && (
           <button
             onClick={() => setPreview(null)}
