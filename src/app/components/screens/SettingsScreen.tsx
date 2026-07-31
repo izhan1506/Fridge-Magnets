@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router";
 import { ArrowLeft, MapPin, Globe, Link, LogOut, ChevronRight } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "../../lib/toast";
 import { useSession } from "../../lib/session";
 
 export function SettingsScreen() {

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { Camera, X, RotateCcw, Check, MapPin, Loader2, ImageUp, AlertTriangle, Minus, Plus } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "../../lib/toast";
 import { M3Button, TextField } from "../chrome";
 import { useSession } from "../../lib/session";
 import { reverseGeocode } from "../../lib/geo";

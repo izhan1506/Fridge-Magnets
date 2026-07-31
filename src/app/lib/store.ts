@@ -31,6 +31,7 @@ function magnetFromRow(row: any): Magnet {
     caption: row.caption,
     instagramUrl: row.instagram_url,
     photoUrl: row.photo_url,
+    tripPhotoUrl: row.trip_photo_url,
     color: row.color,
     verified: row.verified,
     rotation: row.rotation,
@@ -52,6 +53,7 @@ function magnetToRow(magnet: Magnet): any {
     caption: magnet.caption,
     instagram_url: magnet.instagramUrl,
     photo_url: magnet.photoUrl,
+    trip_photo_url: magnet.tripPhotoUrl,
     color: magnet.color,
     verified: magnet.verified,
     rotation: magnet.rotation,
@@ -202,6 +204,7 @@ export async function updateMagnet(
 
   if (patch.caption !== undefined) updates.caption = patch.caption;
   if (patch.instagramUrl !== undefined) updates.instagram_url = patch.instagramUrl;
+  if (patch.tripPhotoUrl !== undefined) updates.trip_photo_url = patch.tripPhotoUrl;
   if (patch.posX !== undefined) updates.pos_x = patch.posX;
   if (patch.posY !== undefined) updates.pos_y = patch.posY;
   if (patch.scale !== undefined) updates.scale = patch.scale;
