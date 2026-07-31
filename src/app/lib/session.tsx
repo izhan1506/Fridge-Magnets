@@ -67,7 +67,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       profile,
       magnets,
       loading,
-      onboarded: !!profile?.homeLabel || (profile?.homeLat !== undefined && profile?.homeLng !== undefined),
+      onboarded: !!profile?.homeLabel || (typeof profile?.homeLat === 'number' && typeof profile?.homeLng === 'number'),
       async signUp(email, password, name) {
         await loadFor(await store.signUp(email, password, name));
       },

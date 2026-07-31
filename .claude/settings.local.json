@@ -21,7 +21,8 @@
       "Bash(git commit -m 'Add trip photo feature and fix mobile story viewer positioning *)",
       "Bash(npm run *)",
       "Bash(git commit -m 'Make SetHomeBase heading darker and more readable *)",
-      "Bash(git commit -m 'Add trip photo editor to MagnetSettings *)"
+      "Bash(git commit -m 'Add trip photo editor to MagnetSettings *)",
+      "Bash(git commit -m 'Fix: more robust onboarding check and navigation *)"
     ]
   }
 }

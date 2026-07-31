@@ -18,7 +18,7 @@ export function SetHomeBase() {
     if (!pick) return;
     await updateProfile({ homeLat: pick.lat, homeLng: pick.lng, homeLabel: pick.label });
     toast.success("Home base set");
-    nav(onboarded ? "/settings" : "/fridge");
+    nav(onboarded ? "/settings" : "/fridge", { replace: true });
   }
 
   async function pickPoint(lat: number, lng: number) {
