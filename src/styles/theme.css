@@ -252,3 +252,11 @@
 [data-sonner-toaster] {
   position: absolute !important;
 }
+
+/* Remove background from toast action buttons (close icon). */
+[data-sonner-toast] button[data-button] {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  color: white !important;
+}

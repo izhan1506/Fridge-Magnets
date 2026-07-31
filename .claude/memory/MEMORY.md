@@ -1,0 +1,2 @@
+- [Project Status](project_status.md) — Fridge Magnets V2 (React/Supabase/Vercel), live deployment, latest features
+- [User Preferences](user_preferences.md) — Direct/efficient communication style, action-oriented
