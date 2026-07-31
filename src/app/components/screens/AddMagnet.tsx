@@ -40,6 +40,7 @@ export function AddMagnet() {
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const tripPhotoInputRef = useRef<HTMLInputElement>(null);
 
   // ── 1. Detect location ──
   useEffect(() => {
@@ -309,8 +310,7 @@ export function AddMagnet() {
       </div>
     );
 
-  if (step === "details") {
-    const tripPhotoRef = useRef<HTMLInputElement>(null);
+  if (step === "details")
     return (
       <div className="flex h-full flex-col px-6 pb-8 pt-10">
         <h1>Add the details</h1>
@@ -336,42 +336,54 @@ export function AddMagnet() {
             placeholder="https://instagram.com/p/…"
           />
         </div>
-        <div className="mt-auto space-y-2 pt-8">
-          <M3Button
-            full
-            icon={<ImageUp size={18} />}
-            onClick={() => tripPhotoRef.current?.click()}
-          >
-            Add trip photo
-          </M3Button>
-          <input
-            ref={tripPhotoRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={async (e) => {
+        <input
+          ref={tripPhotoInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={async (e) => {
+            try {
               const file = e.target.files?.[0];
               if (file) {
                 const reader = new FileReader();
                 reader.onload = (event) => {
-                  const dataUrl = event.target?.result as string;
-                  setTripPhoto(dataUrl);
-                  setStep("trip-photo");
+                  try {
+                    const dataUrl = event.target?.result as string;
+                    setTripPhoto(dataUrl);
+                    setStep("trip-photo");
+                  } catch (err) {
+                    toast.error("Failed to load photo");
+                  }
                 };
                 reader.readAsDataURL(file);
               }
+            } catch (err) {
+              toast.error("Failed to select photo");
+            }
+          }}
+        />
+        <div className="mt-auto space-y-2 pt-8">
+          <M3Button
+            full
+            icon={<ImageUp size={18} />}
+            onClick={() => {
+              try {
+                tripPhotoInputRef.current?.click();
+              } catch (err) {
+                toast.error("Could not open gallery");
+              }
             }}
-          />
+          >
+            Add trip photo
+          </M3Button>
           <button className="w-full text-center text-muted-foreground" onClick={() => setInstagram("")}>
             Skip the Instagram link
           </button>
         </div>
       </div>
     );
-  }
 
-  if (step === "trip-photo") {
-    const tripPhotoRef = useRef<HTMLInputElement>(null);
+  if (step === "trip-photo")
     return (
       <div className="flex h-full flex-col px-6 pb-8 pt-10">
         <div className="mb-6 flex items-center gap-3">
@@ -394,38 +406,51 @@ export function AddMagnet() {
             </div>
           )}
         </div>
-        <div className="mt-auto space-y-2 pt-8">
-          <M3Button
-            full
-            icon={<ImageUp size={18} />}
-            onClick={() => tripPhotoRef.current?.click()}
-          >
-            Upload photo
-          </M3Button>
-          <input
-            ref={tripPhotoRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={async (e) => {
+        <input
+          ref={tripPhotoInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={async (e) => {
+            try {
               const file = e.target.files?.[0];
               if (file) {
                 const reader = new FileReader();
                 reader.onload = (event) => {
-                  const dataUrl = event.target?.result as string;
-                  setTripPhoto(dataUrl);
+                  try {
+                    const dataUrl = event.target?.result as string;
+                    setTripPhoto(dataUrl);
+                  } catch (err) {
+                    toast.error("Failed to load photo");
+                  }
                 };
                 reader.readAsDataURL(file);
               }
+            } catch (err) {
+              toast.error("Failed to select photo");
+            }
+          }}
+        />
+        <div className="mt-auto space-y-2 pt-8">
+          <M3Button
+            full
+            icon={<ImageUp size={18} />}
+            onClick={() => {
+              try {
+                tripPhotoInputRef.current?.click();
+              } catch (err) {
+                toast.error("Could not open gallery");
+              }
             }}
-          />
+          >
+            Upload photo
+          </M3Button>
           <M3Button full variant="tonal" onClick={save}>
             Save to fridge
           </M3Button>
         </div>
       </div>
     );
-  }
 
   // saved
   return (
