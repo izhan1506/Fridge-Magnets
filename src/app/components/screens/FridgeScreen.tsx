@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router";
-import { Bell } from "lucide-react";
+import { Bell, X } from "lucide-react";
 import { toast } from "sonner";
 import { useSession } from "../../lib/session";
 import { BottomNavBar, GlassSquareIconButton } from "../glass-nav";
@@ -21,7 +21,14 @@ export function FridgeScreen() {
               <GlassSquareIconButton
                 icon={<Bell size={20} strokeWidth={1.75} />}
                 label="Notifications"
-                onClick={() => toast("No new notifications")}
+                onClick={() => {
+                  const id = toast("No new notifications", {
+                    action: {
+                      label: <X size={18} />,
+                      onClick: () => toast.dismiss(id),
+                    },
+                  });
+                }}
               />
               <GlassSquareIconButton onClick={() => nav("/settings")} label="Profile" />
             </div>
