@@ -45,7 +45,7 @@ export function SetHomeBase() {
           onChange={(e) => setQuery(e.target.value)}
         />
         {results.length > 0 && (
-          <div className="mt-2 overflow-hidden rounded-2xl bg-card shadow-lg">
+          <div className="relative z-20 mt-2 max-h-64 overflow-y-auto rounded-2xl bg-card shadow-lg">
             {results.map((c) => (
               <button
                 key={`${c.city}-${c.country}`}
