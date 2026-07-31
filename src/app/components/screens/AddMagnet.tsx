@@ -309,7 +309,8 @@ export function AddMagnet() {
       </div>
     );
 
-  if (step === "details")
+  if (step === "details") {
+    const tripPhotoRef = useRef<HTMLInputElement>(null);
     return (
       <div className="flex h-full flex-col px-6 pb-8 pt-10">
         <h1>Add the details</h1>
@@ -336,15 +337,38 @@ export function AddMagnet() {
           />
         </div>
         <div className="mt-auto space-y-2 pt-8">
-          <M3Button full onClick={() => setStep("trip-photo")}>
+          <M3Button
+            full
+            icon={<ImageUp size={18} />}
+            onClick={() => tripPhotoRef.current?.click()}
+          >
             Add trip photo
           </M3Button>
+          <input
+            ref={tripPhotoRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                  const dataUrl = event.target?.result as string;
+                  setTripPhoto(dataUrl);
+                  setStep("trip-photo");
+                };
+                reader.readAsDataURL(file);
+              }
+            }}
+          />
           <button className="w-full text-center text-muted-foreground" onClick={() => setInstagram("")}>
             Skip the Instagram link
           </button>
         </div>
       </div>
     );
+  }
 
   if (step === "trip-photo") {
     const tripPhotoRef = useRef<HTMLInputElement>(null);
