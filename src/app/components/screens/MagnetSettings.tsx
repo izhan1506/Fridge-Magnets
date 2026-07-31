@@ -99,11 +99,7 @@ export function MagnetSettings() {
                 onCanceled={() => setShowDeleteConfirm(false)}
               />
             ) : (
-              <>
-                <InstagramLinkForm magnet={editing} onDone={() => setEditing(null)} />
-                <div className="h-px bg-border" />
-                <TripPhotoForm magnet={editing} onDone={() => setEditing(null)} />
-              </>
+              <EditMagnetForm magnet={editing} onDone={() => setEditing(null)} />
             )}
           </div>
         )}
@@ -121,126 +117,90 @@ export function MagnetSettings() {
   );
 }
 
-function InstagramLinkForm({ magnet, onDone }: { magnet: Magnet; onDone: () => void }) {
+function EditMagnetForm({ magnet, onDone }: { magnet: Magnet; onDone: () => void }) {
   const { updateMagnet } = useSession();
   const [url, setUrl] = useState(magnet.instagramUrl ?? "");
-  const [busy, setBusy] = useState(false);
-
-  async function save() {
-    setBusy(true);
-    await updateMagnet(magnet.id, { instagramUrl: url.trim() || undefined });
-    setBusy(false);
-    toast.success(url.trim() ? "Instagram link added" : "Instagram link removed");
-    onDone();
-  }
-
-  async function remove() {
-    setBusy(true);
-    await updateMagnet(magnet.id, { instagramUrl: undefined });
-    setBusy(false);
-    toast.success("Instagram link removed");
-    onDone();
-  }
-
-  return (
-    <div>
-      <TextField
-        label="Instagram post link"
-        placeholder="https://instagram.com/p/... or /reel/..."
-        value={url}
-        onChange={(e) => setUrl(e.target.value)}
-        hint="A post or Reel link plays inline on this magnet's story card. Story links can't be embedded (Instagram blocks that), so those just show as an outbound link. Leave blank to remove."
-        autoFocus
-      />
-      <M3Button full className="mt-5" onClick={save} disabled={busy}>
-        {busy ? "Saving…" : "Save"}
-      </M3Button>
-      {magnet.instagramUrl && (
-        <button
-          onClick={remove}
-          disabled={busy}
-          className="mt-3 w-full text-center text-destructive hover:underline disabled:opacity-40"
-        >
-          Delete Instagram link
-        </button>
-      )}
-    </div>
-  );
-}
-
-function TripPhotoForm({ magnet, onDone }: { magnet: Magnet; onDone: () => void }) {
-  const { updateMagnet } = useSession();
   const [preview, setPreview] = useState(magnet.tripPhotoUrl ?? null);
   const [busy, setBusy] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const hasChanges = url !== (magnet.instagramUrl ?? "") || preview !== magnet.tripPhotoUrl;
+
   async function save() {
     setBusy(true);
-    await updateMagnet(magnet.id, { tripPhotoUrl: preview || undefined });
+    await updateMagnet(magnet.id, {
+      instagramUrl: url.trim() || undefined,
+      tripPhotoUrl: preview || undefined,
+    });
     setBusy(false);
-    toast.success(preview ? "Trip photo added" : "Trip photo removed");
-    onDone();
-  }
-
-  async function remove() {
-    setBusy(true);
-    setPreview(null);
-    await updateMagnet(magnet.id, { tripPhotoUrl: undefined });
-    setBusy(false);
-    toast.success("Trip photo removed");
+    toast("Changes saved");
     onDone();
   }
 
   return (
-    <div>
-      <p className="mb-3 text-sm font-semibold">Trip photo</p>
-      {preview ? (
-        <div className="mb-3 overflow-hidden rounded-2xl bg-muted">
-          <img src={preview} alt="Trip photo preview" className="h-40 w-full object-cover" />
-        </div>
-      ) : (
-        <p className="mb-3 text-sm text-muted-foreground">No trip photo yet</p>
-      )}
-      <div className="space-y-2">
-        <M3Button
-          full
-          icon={<ImageUp size={18} />}
-          onClick={() => fileInputRef.current?.click()}
-        >
-          {preview ? "Change photo" : "Add photo"}
-        </M3Button>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={async (e) => {
-            const file = e.target.files?.[0];
-            if (file) {
-              const reader = new FileReader();
-              reader.onload = (event) => {
-                const dataUrl = event.target?.result as string;
-                setPreview(dataUrl);
-              };
-              reader.readAsDataURL(file);
-            }
-          }}
+    <div className="space-y-5">
+      <div>
+        <TextField
+          label="Instagram post link"
+          placeholder="https://instagram.com/p/... or /reel/..."
+          value={url}
+          onChange={(e) => setUrl(e.target.value)}
+          hint="A post or Reel link plays inline on this magnet's story card. Story links can't be embedded (Instagram blocks that), so those just show as an outbound link. Leave blank to remove."
+          autoFocus
         />
-        {preview && (
-          <button
-            onClick={() => setPreview(null)}
-            className="flex h-11 w-full items-center justify-center gap-2 rounded-2xl border border-destructive/40 text-destructive transition hover:bg-destructive/10"
-          >
-            <X size={18} />
-            Remove
-          </button>
-        )}
-        {preview !== magnet.tripPhotoUrl && (
-          <M3Button full variant="tonal" onClick={save} disabled={busy}>
-            {busy ? "Saving…" : "Save"}
-          </M3Button>
-        )}
       </div>
+
+      <div className="h-px bg-border" />
+
+      <div>
+        <p className="mb-3 text-sm font-semibold">Trip photo</p>
+        {preview ? (
+          <div className="mb-3 overflow-hidden rounded-2xl bg-muted">
+            <img src={preview} alt="Trip photo preview" className="h-40 w-full object-cover" />
+          </div>
+        ) : (
+          <p className="mb-3 text-sm text-muted-foreground">No trip photo yet</p>
+        )}
+        <div className="space-y-2">
+          <M3Button
+            full
+            icon={<ImageUp size={18} />}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            {preview ? "Change photo" : "Add photo"}
+          </M3Button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                  const dataUrl = event.target?.result as string;
+                  setPreview(dataUrl);
+                };
+                reader.readAsDataURL(file);
+              }
+            }}
+          />
+          {preview && (
+            <button
+              onClick={() => setPreview(null)}
+              className="flex h-11 w-full items-center justify-center gap-2 rounded-2xl border border-destructive/40 text-destructive transition hover:bg-destructive/10"
+            >
+              <X size={18} />
+              Remove
+            </button>
+          )}
+        </div>
+      </div>
+
+      <M3Button full onClick={save} disabled={busy || !hasChanges}>
+        {busy ? "Saving…" : "Save"}
+      </M3Button>
     </div>
   );
 }
