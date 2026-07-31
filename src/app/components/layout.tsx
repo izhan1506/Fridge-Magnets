@@ -33,8 +33,8 @@ export function PhoneFrame({ children }: { children: ReactNode }) {
         <StatusBar />
       </div>
 
-      {/* Mobile: Full screen, no frame, no rounded corners */}
-      <div className="md:hidden relative w-full h-screen overflow-hidden bg-background">
+      {/* Mobile: Full screen, no frame, no rounded corners. Uses dvh for mobile browser chrome. */}
+      <div className="md:hidden relative w-full overflow-hidden bg-background" style={{ height: "100dvh" }}>
         {children}
       </div>
     </div>
