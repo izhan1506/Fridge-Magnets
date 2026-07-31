@@ -16,9 +16,13 @@ export function SetHomeBase() {
 
   async function confirm() {
     if (!pick) return;
-    await updateProfile({ homeLat: pick.lat, homeLng: pick.lng, homeLabel: pick.label });
-    toast.success("Home base set");
-    nav(onboarded ? "/settings" : "/fridge", { replace: true });
+    try {
+      await updateProfile({ homeLat: pick.lat, homeLng: pick.lng, homeLabel: pick.label });
+      toast.success("Home base set");
+      nav("/fridge", { replace: true });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to set home base");
+    }
   }
 
   async function pickPoint(lat: number, lng: number) {
