@@ -198,7 +198,7 @@ function EditMagnetForm({ magnet, onDone }: { magnet: Magnet; onDone: () => void
         </div>
       </div>
 
-      <M3Button full onClick={save} disabled={busy || !hasChanges}>
+      <M3Button variant="tonal" full onClick={save} disabled={busy || !hasChanges}>
         {busy ? "Saving…" : "Save"}
       </M3Button>
     </div>
