@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
-import { Camera, X, RotateCcw, Check, MapPin, Loader2, ImageUp, AlertTriangle, Minus, Plus } from "lucide-react";
+import { Camera, X, RotateCcw, Check, MapPin, Loader2, ImageUp, AlertTriangle, Minus, Plus, ArrowLeft } from "lucide-react";
 import { toast } from "../../lib/toast";
 import { M3Button, TextField } from "../chrome";
 import { useSession } from "../../lib/session";
@@ -346,11 +346,17 @@ export function AddMagnet() {
       </div>
     );
 
-  if (step === "trip-photo")
+  if (step === "trip-photo") {
+    const tripPhotoRef = useRef<HTMLInputElement>(null);
     return (
       <div className="flex h-full flex-col px-6 pb-8 pt-10">
-        <h1>Add a photo from the trip</h1>
-        <p className="mt-1 text-muted-foreground">Optional — this shows in the story, not on the magnet.</p>
+        <div className="mb-6 flex items-center gap-3">
+          <button onClick={() => setStep("details")} className="rounded-xl border border-white/30 bg-white/15 p-2 backdrop-blur-[7px] transition hover:bg-white/25">
+            <ArrowLeft size={22} />
+          </button>
+          <h1>Add a photo from the trip</h1>
+        </div>
+        <p className="text-muted-foreground">Optional — this shows in the story, not on the magnet.</p>
         <div className="my-6 flex flex-1 items-center justify-center overflow-hidden rounded-3xl checker">
           {tripPhoto ? (
             <img
@@ -365,36 +371,37 @@ export function AddMagnet() {
           )}
         </div>
         <div className="mt-auto space-y-2 pt-8">
-          <label className="block w-full">
-            <M3Button full icon={<ImageUp size={18} />}>
-              Upload photo
-            </M3Button>
-            <input
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={async (e) => {
-                const file = e.target.files?.[0];
-                if (file) {
-                  const reader = new FileReader();
-                  reader.onload = (event) => {
-                    const dataUrl = event.target?.result as string;
-                    setTripPhoto(dataUrl);
-                  };
-                  reader.readAsDataURL(file);
-                }
-              }}
-            />
-          </label>
+          <M3Button
+            full
+            icon={<ImageUp size={18} />}
+            onClick={() => tripPhotoRef.current?.click()}
+          >
+            Upload photo
+          </M3Button>
+          <input
+            ref={tripPhotoRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                  const dataUrl = event.target?.result as string;
+                  setTripPhoto(dataUrl);
+                };
+                reader.readAsDataURL(file);
+              }
+            }}
+          />
           <M3Button full variant="tonal" onClick={save}>
             Save to fridge
           </M3Button>
-          <button className="w-full text-center text-muted-foreground" onClick={() => setStep("details")}>
-            Back
-          </button>
         </div>
       </div>
     );
+  }
 
   // saved
   return (
