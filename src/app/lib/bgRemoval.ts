@@ -23,6 +23,44 @@
   };
 })();
 
+async function compressImage(blob: Blob, maxWidth = 1024, maxHeight = 1024, quality = 0.8): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      let width = img.width;
+      let height = img.height;
+
+      // Scale down if larger than max dimensions
+      if (width > maxWidth || height > maxHeight) {
+        const ratio = Math.min(maxWidth / width, maxHeight / height);
+        width = Math.round(width * ratio);
+        height = Math.round(height * ratio);
+      }
+
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        reject(new Error("Failed to get canvas context"));
+        return;
+      }
+
+      ctx.drawImage(img, 0, 0, width, height);
+      canvas.toBlob(
+        (compressed) => {
+          if (compressed) resolve(compressed);
+          else reject(new Error("Failed to compress image"));
+        },
+        "image/jpeg",
+        quality,
+      );
+    };
+    img.onerror = () => reject(new Error("Failed to load image"));
+    img.src = URL.createObjectURL(blob);
+  });
+}
+
 export async function removeMagnetBackground(source: Blob): Promise<Blob> {
   let removeBackground: (input: Blob) => Promise<Blob>;
   try {
@@ -31,11 +69,18 @@ export async function removeMagnetBackground(source: Blob): Promise<Blob> {
     const mod = await import("@imgly/background-removal");
     removeBackground = mod.removeBackground;
   } catch {
-    throw new Error("Background removal is unavailable right now");
+    throw new Error("Background removal service is unavailable");
   }
 
-  const result = await removeBackground(source);
-  return result;
+  try {
+    // Compress image first to reduce memory usage and improve reliability
+    const compressed = await compressImage(source);
+    const result = await removeBackground(compressed);
+    return result;
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : "Unknown error";
+    throw new Error(`Background removal failed: ${msg} — try a different photo or a clearer background`);
+  }
 }
 
 export function blobToDataUrl(blob: Blob): Promise<string> {

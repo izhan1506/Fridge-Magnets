@@ -247,12 +247,12 @@ export function AddMagnet() {
       <ErrorState
         icon={<AlertTriangle size={40} />}
         title="Background removal failed"
-        body="Something went wrong cutting out your magnet. Give it another try."
+        body="Try taking a photo with a clearer background, better lighting, or a less complex scene. Sometimes the processing is just overloaded — retrying can help."
         primaryLabel="Retry"
         onPrimary={() => rawBlob && process(rawBlob)}
         secondary={
           <button className="text-primary" onClick={() => setStep("camera")}>
-            Retake photo
+            Take another photo
           </button>
         }
         onClose={close}
