@@ -41,11 +41,13 @@ export function BottomSheet({
   onClose,
   children,
   title,
+  action,
 }: {
   open: boolean;
   onClose: () => void;
   children: ReactNode;
   title?: string;
+  action?: { icon: ReactNode; onClick: () => void; label: string };
 }) {
   return (
     <AnimatePresence>
@@ -68,9 +70,16 @@ export function BottomSheet({
             {title && (
               <div className="mb-3 flex items-center justify-between">
                 <h2>{title}</h2>
-                <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
-                  <X size={22} />
-                </button>
+                <div className="flex items-center gap-2">
+                  {action && (
+                    <button onClick={action.onClick} className="text-destructive hover:text-destructive/80" aria-label={action.label}>
+                      {action.icon}
+                    </button>
+                  )}
+                  <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
+                    <X size={22} />
+                  </button>
+                </div>
               </div>
             )}
             {children}

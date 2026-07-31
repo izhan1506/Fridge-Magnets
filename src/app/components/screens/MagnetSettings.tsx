@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { ArrowLeft, Link, MoreVertical, Trash2, ImageUp, X } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "../../lib/toast";
 import { useSession } from "../../lib/session";
 import { MAGNET_COLORS } from "../../lib/skins";
 import type { Magnet } from "../../lib/types";
@@ -20,6 +20,7 @@ export function MagnetSettings() {
   const { profile, magnets } = useSession();
   const [editing, setEditing] = useState<Magnet | null>(null);
   const [storyIndex, setStoryIndex] = useState<number | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   return (
     <div className="flex h-full flex-col px-4 pb-10 pt-11">
@@ -69,14 +70,41 @@ export function MagnetSettings() {
         </div>
       )}
 
-      <BottomSheet open={!!editing} onClose={() => setEditing(null)} title={editing ? `${editing.city}, ${editing.country}` : undefined}>
+      <BottomSheet
+        open={!!editing}
+        onClose={() => {
+          setEditing(null);
+          setShowDeleteConfirm(false);
+        }}
+        title={editing ? `${editing.city}, ${editing.country}` : undefined}
+        action={
+          editing
+            ? {
+                icon: <Trash2 size={20} />,
+                onClick: () => setShowDeleteConfirm(true),
+                label: "Delete magnet",
+              }
+            : undefined
+        }
+      >
         {editing && (
           <div className="space-y-5">
-            <InstagramLinkForm magnet={editing} onDone={() => setEditing(null)} />
-            <div className="h-px bg-border" />
-            <TripPhotoForm magnet={editing} onDone={() => setEditing(null)} />
-            <div className="h-px bg-border" />
-            <DeleteMagnetButton magnet={editing} onDeleted={() => setEditing(null)} />
+            {showDeleteConfirm ? (
+              <DeleteConfirmation
+                magnet={editing}
+                onConfirmed={() => {
+                  setEditing(null);
+                  setShowDeleteConfirm(false);
+                }}
+                onCanceled={() => setShowDeleteConfirm(false)}
+              />
+            ) : (
+              <>
+                <InstagramLinkForm magnet={editing} onDone={() => setEditing(null)} />
+                <div className="h-px bg-border" />
+                <TripPhotoForm magnet={editing} onDone={() => setEditing(null)} />
+              </>
+            )}
           </div>
         )}
       </BottomSheet>
@@ -213,36 +241,31 @@ function TripPhotoForm({ magnet, onDone }: { magnet: Magnet; onDone: () => void 
   );
 }
 
-function DeleteMagnetButton({ magnet, onDeleted }: { magnet: Magnet; onDeleted: () => void }) {
+function DeleteConfirmation({
+  magnet,
+  onConfirmed,
+  onCanceled,
+}: {
+  magnet: Magnet;
+  onConfirmed: () => void;
+  onCanceled: () => void;
+}) {
   const { removeMagnet } = useSession();
-  const [confirming, setConfirming] = useState(false);
   const [busy, setBusy] = useState(false);
 
   async function del() {
     setBusy(true);
     await removeMagnet(magnet.id);
     setBusy(false);
-    toast.success("Magnet deleted");
-    onDeleted();
-  }
-
-  if (!confirming) {
-    return (
-      <button
-        onClick={() => setConfirming(true)}
-        className="flex h-12 w-full items-center justify-center gap-2 rounded-2xl border border-destructive/40 text-destructive transition hover:bg-destructive/10"
-      >
-        <Trash2 size={18} />
-        Delete magnet
-      </button>
-    );
+    toast("Magnet deleted");
+    onConfirmed();
   }
 
   return (
     <div className="rounded-2xl border border-destructive/40 bg-destructive/10 p-4">
       <p className="text-center">Delete this magnet permanently? This can't be undone.</p>
       <div className="mt-4 flex gap-2">
-        <M3Button variant="tonal" full onClick={() => setConfirming(false)} disabled={busy}>
+        <M3Button variant="tonal" full onClick={onCanceled} disabled={busy}>
           Cancel
         </M3Button>
         <button
