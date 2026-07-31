@@ -1,3 +1,4 @@
-- [Project Status](project_status.md) — Fridge Magnets V2 (React/Supabase/Vercel), live deployment, latest features
+- [Project Status](project_status.md) — Fridge Magnets V2 (React/Supabase/Vercel), current features and launch checklist
+- [Session Summary](session_summary.md) — Latest session: trip photo system, UX improvements, reliability fixes (2026-07-31)
 - [User Preferences](user_preferences.md) — Direct/efficient communication style, action-oriented
-- [Database Schema](database_schema.md) — Critical fields fixed: trip_photo_url, RLS policies, setup checklist
+- [Database Schema](database_schema.md) — Trip photo field mappings fixed, RLS policies, setup checklist

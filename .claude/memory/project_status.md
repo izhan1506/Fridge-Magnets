@@ -18,14 +18,33 @@ metadata:
   - VITE_SUPABASE_URL=https://lrynubanuhhmmcfytbsk.supabase.co
   - VITE_SUPABASE_ANON_KEY=[stored in Vercel secrets]
 
-### Latest Features Implemented (This Session)
+### Latest Features Implemented (Recent Session)
 
-1. **Trip Photo Feature** - Users can upload optional trip photos when creating magnets, displayed full-screen in story viewer
-2. **Trip Photo Editor** - Users can add/edit trip photos on existing magnets from MagnetSettings screen
-3. **Mobile Story Viewer** - Fixed positioning (absolute instead of fixed) to stay within mobile frame
-4. **Onboarding UX** - Fixed so users don't get sent back to "Set Home Base" after first login
-5. **Notification Close Button** - Added X button on notification toast for dismissal
-6. **Dark Heading on Map** - SetHomeBase heading now dark/readable on light map background
+**Trip Photo System:**
+1. ✅ Trip photo integrated into magnet details screen (no separate step)
+2. ✅ Trip photo preview on details screen with ability to change/remove
+3. ✅ Trip photos stored as separate field (`trip_photo_url`) from magnet photo
+4. ✅ Trip photos display full-screen in story viewer (takes priority over magnet photo)
+5. ✅ Trip photo editor in MagnetSettings with single Save button
+6. ✅ Gallery/file picker access for all photo uploads (Add button, Upload button)
+
+**UI/UX Improvements:**
+7. ✅ Combined Instagram link + trip photo editing into single form with one Save button
+8. ✅ Removed "Delete Instagram link" button - users clear text and save instead
+9. ✅ Delete magnet button moved to header as trash icon (not in form)
+10. ✅ Back arrows at top of screens (consistent across app)
+11. ✅ Toast notifications with white X close button (no background)
+
+**Reliability Fixes:**
+12. ✅ Background removal auto-compresses images (1024×1024, quality 0.8) before processing
+13. ✅ Better error messages for background removal failures with actionable tips
+14. ✅ Fixed navigation after setting home base on first login
+15. ✅ Fixed file input refs for proper gallery access
+
+**Database Schema:**
+16. ✅ Added `trip_photo_url` field mapping in store.ts
+17. ✅ Fixed `magnetFromRow`, `magnetToRow`, and `updateMagnet` functions
+18. ✅ All toast imports updated to use custom utility with close buttons
 
 ### Tech Stack
 
@@ -79,9 +98,35 @@ Configured in `.claude/settings.local.json`:
 - `Read`, `Write`, `Edit` - File operations
 - `Bash(mkdir *)`, `Bash(chmod *)`, etc. - File system operations
 
-### Next Ideas for Enhancement
+### LAUNCH CHECKLIST - CRITICAL
 
-- Compress/optimize trip photos before storing
-- Add location verification for magnets (proof-of-visit)
-- Social features (like, comment on magnets)
-- Magnet analytics (view count, etc.)
+**Database Setup (Must verify in Supabase):**
+- [ ] `profiles` table exists with all required columns
+- [ ] `magnets` table exists with ALL columns including `trip_photo_url`
+- [ ] Indexes created on `user_id` and `created_at`
+- [ ] RLS policies configured on both tables
+- [ ] `magnet-photos` storage bucket created and public
+- [ ] Auth trigger for auto-creating profiles on signup
+- [ ] Google OAuth redirect URL set correctly
+
+**Testing Before Launch:**
+- [ ] Sign up with email works
+- [ ] Set home base works
+- [ ] Create magnet with background removal works
+- [ ] Add trip photo during magnet creation works
+- [ ] Trip photo displays in story viewer when clicking magnet
+- [ ] Edit magnet to add/change trip photo works
+- [ ] Delete magnet from settings works
+- [ ] View public map shows other users' fridges
+- [ ] Sign in with Google works
+
+**See:** `SUPABASE_SETUP.md` in repo root for complete configuration guide
+
+### Future Enhancement Ideas
+
+- Compress/optimize trip photos before storing (currently stored as data URLs)
+- Add location verification for magnets (proof-of-visit badge)
+- Social features (like, comment, save magnets)
+- Magnet analytics (view count, most-liked)
+- Search by location/city
+- User profiles with stats
