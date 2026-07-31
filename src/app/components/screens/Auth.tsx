@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import { toast } from "sonner";
+import { toast } from "../../lib/toast";
 import { M3Button, TextField } from "../chrome";
 import { useSession } from "../../lib/session";
 

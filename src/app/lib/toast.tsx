@@ -1,7 +1,7 @@
 import { X } from "lucide-react";
 import { toast as sonnerToast } from "sonner";
 
-export function toast(message: string, options?: any) {
+const createToastWithCloseButton = (message: string, options?: any) => {
   const id = sonnerToast(message, {
     ...options,
     action: {
@@ -10,4 +10,14 @@ export function toast(message: string, options?: any) {
     },
   });
   return id;
-}
+};
+
+export const toast = Object.assign(createToastWithCloseButton, {
+  success: (message: string, options?: any) =>
+    createToastWithCloseButton(message, { ...options, type: "success" }),
+  error: (message: string, options?: any) =>
+    createToastWithCloseButton(message, { ...options, type: "error" }),
+  loading: (message: string, options?: any) =>
+    createToastWithCloseButton(message, { ...options, type: "loading" }),
+  dismiss: (id?: string | number) => sonnerToast.dismiss(id),
+});

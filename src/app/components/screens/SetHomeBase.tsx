@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { MapPin, ArrowLeft } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "../../lib/toast";
 import { M3Button, SearchBar } from "../chrome";
 import { WorldMap } from "../worldmap";
 import { searchCities, reverseGeocode } from "../../lib/geo";
