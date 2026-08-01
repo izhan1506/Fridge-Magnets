@@ -126,10 +126,6 @@ export function MapScreen() {
           <PinPreviewCard
             key={selected.profile.id}
             fridge={selected}
-            onView={() => {
-              console.log(`[MapScreen] Navigating to fridge/${selected.profile.id}`);
-              nav(`/fridge/${selected.profile.id}`);
-            }}
             onClose={() => setSelected(null)}
           />
         )}

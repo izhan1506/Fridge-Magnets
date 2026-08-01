@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router";
 import { motion } from "motion/react";
 import type { Magnet, PublicFridge } from "../lib/types";
 import { MAGNET_COLORS } from "../lib/skins";
@@ -71,13 +72,18 @@ export function ClusterBubble({ count, onClick }: { count: number; onClick: () =
 /** Small preview card shown on pin tap. */
 export function PinPreviewCard({
   fridge,
-  onView,
   onClose,
 }: {
   fridge: PublicFridge;
-  onView: () => void;
   onClose: () => void;
 }) {
+  const nav = useNavigate();
+
+  const handleViewFridge = () => {
+    console.log(`[PinPreviewCard] Navigating to /fridge/${fridge.profile.id}`);
+    nav(`/fridge/${fridge.profile.id}`);
+  };
+
   return (
     <motion.div
       initial={{ y: 24, opacity: 0 }}
@@ -96,18 +102,19 @@ export function PinPreviewCard({
         {fridge.magnets.slice(0, 4).map((m) => (
           <span
             key={m.id}
-            className="h-14 w-14 shrink-0 overflow-hidden rounded-xl cursor-pointer"
+            className="h-14 w-14 shrink-0 overflow-hidden rounded-xl cursor-pointer hover:opacity-80 transition"
             style={{ backgroundColor: MAGNET_COLORS[m.color], rotate: `${m.rotation}deg` }}
-            onClick={onView}
+            onClick={handleViewFridge}
           >
             {m.photoUrl && <ImageWithFallback src={m.photoUrl} alt={m.city} className="h-full w-full object-cover" />}
           </span>
         ))}
       </div>
-      <M3Button full className="mt-4 relative z-30" onClick={() => {
-        console.log("[PinPreviewCard] View full fridge clicked");
-        onView();
-      }}>
+      <M3Button
+        full
+        className="mt-4 relative z-30"
+        onClick={handleViewFridge}
+      >
         View full fridge
       </M3Button>
     </motion.div>
