@@ -47,8 +47,27 @@ export function MapScreen() {
   const [selected, setSelected] = useState<PublicFridge | null>(null);
 
   useEffect(() => {
-    (async () => setFridges(await getPublicFridges(profile?.id)))();
-  }, [profile?.id]);
+    (async () => {
+      const publicFridges = await getPublicFridges(profile?.id);
+      // Always include current user's fridge if they have a home base set
+      if (profile && profile.homeLat !== 0 && profile.homeLng !== 0) {
+        const userFridge: PublicFridge = {
+          profile: {
+            id: profile.id,
+            name: profile.name,
+            homeLat: profile.homeLat,
+            homeLng: profile.homeLng,
+            homeLabel: profile.homeLabel,
+            mapPublic: profile.mapPublic,
+          },
+          magnets: magnets,
+        };
+        setFridges([userFridge, ...publicFridges]);
+      } else {
+        setFridges(publicFridges);
+      }
+    })();
+  }, [profile?.id, profile?.homeLat, profile?.homeLng, magnets]);
 
   const clusters = useMemo(() => clusterFridges(fridges), [fridges]);
 
