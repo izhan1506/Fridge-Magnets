@@ -61,20 +61,39 @@ function Router() {
   );
 }
 
+function AppLayout() {
+  const location = useLocation();
+  const isDesignSystem = location.pathname === "/designsystem";
+
+  return isDesignSystem ? (
+    <>
+      <Router />
+      <Toaster
+        position="top-center"
+        theme="dark"
+        offset={{ top: 58, bottom: 24, left: 24, right: 24 }}
+        mobileOffset={{ top: 58, bottom: 16, left: 16, right: 16 }}
+      />
+    </>
+  ) : (
+    <PhoneFrame>
+      <Router />
+      <Toaster
+        position="top-center"
+        theme="dark"
+        offset={{ top: 58, bottom: 24, left: 24, right: 24 }}
+        mobileOffset={{ top: 58, bottom: 16, left: 16, right: 16 }}
+      />
+    </PhoneFrame>
+  );
+}
+
 export default function App() {
   return (
     <SessionProvider>
-      <PhoneFrame>
-        <BrowserRouter>
-          <Router />
-        </BrowserRouter>
-        <Toaster
-          position="top-center"
-          theme="dark"
-          offset={{ top: 58, bottom: 24, left: 24, right: 24 }}
-          mobileOffset={{ top: 58, bottom: 16, left: 16, right: 16 }}
-        />
-      </PhoneFrame>
+      <BrowserRouter>
+        <AppLayout />
+      </BrowserRouter>
     </SessionProvider>
   );
 }

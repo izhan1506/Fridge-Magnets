@@ -22,7 +22,23 @@
       "Bash(npm run *)",
       "Bash(git commit -m 'Make SetHomeBase heading darker and more readable *)",
       "Bash(git commit -m 'Add trip photo editor to MagnetSettings *)",
-      "Bash(git commit -m 'Fix: more robust onboarding check and navigation *)"
+      "Bash(git commit -m 'Fix: more robust onboarding check and navigation *)",
+      "Bash(git commit -m 'Fix: improve city search dropdown visibility and scrolling *)",
+      "Bash(git commit -m 'Fix: allow new users to set home base after signup *)",
+      "Bash(git commit -m 'Feature: enable global city search via OpenStreetMap API *)",
+      "Bash(git commit -m 'Fix: improve home base validation and error handling *)",
+      "Bash(git commit -m 'Feature: show user'\\\\''s own fridge on world map after setting home base *)",
+      "Bash(git commit -m 'Fix: improve background removal reliability with retry and timeouts *)",
+      "Bash(git commit -m 'UX: improve auth screen with better placeholders and password toggle *)",
+      "Bash(git commit -m 'Fix: auth screen defaults to login and improve eye icon alignment *)",
+      "Bash(git revert *)",
+      "Bash(git commit -m 'Fix: center eye icon vertically in password field *)",
+      "Bash(git commit -m 'Fix: center eye icon vertically in password input field *)",
+      "Bash(git commit -m 'Fix: adjust eye icon vertical position *)",
+      "Read(//tmp/**)",
+      "Bash(curl -s http://localhost:5178/designsystem)",
+      "Bash(git commit -m ' *)",
+      "Bash(curl -s \"https://onsiren.vercel.app/#foundations\")"
     ]
   }
 }
