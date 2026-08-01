@@ -58,20 +58,18 @@ export function Auth() {
           onChange={(e) => setEmail(e.target.value)}
           placeholder="you@example.com"
         />
-        <div className="relative flex items-center">
-          <div className="flex-1">
-            <TextField
-              label="Password"
-              type={showPassword ? "text" : "password"}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-            />
-          </div>
+        <div className="relative">
+          <TextField
+            label="Password"
+            type={showPassword ? "text" : "password"}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="••••••••"
+          />
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-4 flex items-center justify-center text-muted-foreground hover:text-foreground transition"
+            className="absolute right-4 top-14 flex items-center justify-center text-muted-foreground hover:text-foreground transition"
             aria-label={showPassword ? "Hide password" : "Show password"}
           >
             {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
