@@ -290,6 +290,8 @@ export async function getPublicFridges(
 }
 
 export async function getFridge(userId: string): Promise<PublicFridge | null> {
+  console.log(`[Store] Fetching fridge for userId: ${userId}`);
+
   // Fetch the profile (RLS will allow only if it's public or the user's own)
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
@@ -298,7 +300,17 @@ export async function getFridge(userId: string): Promise<PublicFridge | null> {
     .single();
 
   // If not found or RLS denied it, return null
-  if (profileError || !profile) return null;
+  if (profileError) {
+    console.error(`[Store] Error fetching profile: ${profileError.message}`);
+    return null;
+  }
+
+  if (!profile) {
+    console.log(`[Store] Profile not found for userId: ${userId}`);
+    return null;
+  }
+
+  console.log(`[Store] Found profile: ${profile.name}, map_public: ${profile.map_public}`);
 
   // Fetch magnets for this user (RLS will allow only if public)
   const { data: magnets, error: magError } = await supabase
@@ -307,7 +319,12 @@ export async function getFridge(userId: string): Promise<PublicFridge | null> {
     .eq("user_id", userId)
     .order("created_at", { ascending: false });
 
-  if (magError) throw magError;
+  if (magError) {
+    console.error(`[Store] Error fetching magnets: ${magError.message}`);
+    throw magError;
+  }
+
+  console.log(`[Store] Found ${(magnets || []).length} magnets`);
 
   return {
     profile: profileFromRow(profile),

@@ -15,8 +15,17 @@ export function OtherFridge() {
   useEffect(() => {
     (async () => {
       setLoading(true);
-      setFridge(userId ? await getFridge(userId) : null);
-      setLoading(false);
+      try {
+        console.log(`[OtherFridge] Loading fridge for userId: ${userId}`);
+        const data = userId ? await getFridge(userId) : null;
+        console.log(`[OtherFridge] Loaded fridge:`, data);
+        setFridge(data);
+      } catch (error) {
+        console.error(`[OtherFridge] Error loading fridge:`, error);
+        setFridge(null);
+      } finally {
+        setLoading(false);
+      }
     })();
   }, [userId]);
 
