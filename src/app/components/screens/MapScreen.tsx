@@ -134,7 +134,9 @@ export function MapScreen() {
 
       <BottomNavBar
         value="map"
-        onTabChange={(v) => v === "fridge" && nav("/fridge")}
+        onTabChange={(v) => {
+          if (v === "fridge") nav("/fridge");
+        }}
         onAdd={() => nav("/add")}
       />
     </div>

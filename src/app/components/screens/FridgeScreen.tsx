@@ -33,7 +33,9 @@ export function FridgeScreen() {
 
       <BottomNavBar
         value="fridge"
-        onTabChange={(v) => v === "map" && nav("/map")}
+        onTabChange={(v) => {
+          if (v === "map") nav("/map");
+        }}
         onAdd={() => nav("/add")}
       />
     </div>
