@@ -35,11 +35,21 @@ export function SetHomeBase() {
   async function confirm() {
     if (!pick) return;
     try {
-      await updateProfile({ homeLat: pick.lat, homeLng: pick.lng, homeLabel: pick.label });
+      const payload = {
+        homeLat: Number(pick.lat),
+        homeLng: Number(pick.lng),
+        homeLabel: pick.label
+      };
+      if (!isFinite(payload.homeLat) || !isFinite(payload.homeLng)) {
+        throw new Error("Invalid coordinates");
+      }
+      await updateProfile(payload);
       toast.success("Home base set");
       nav("/fridge", { replace: true });
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Failed to set home base");
+      const errorMsg = e instanceof Error ? e.message : "Failed to set home base";
+      console.error("Home base error:", errorMsg, pick);
+      toast.error(errorMsg);
     }
   }
 

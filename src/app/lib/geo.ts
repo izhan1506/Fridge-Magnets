@@ -63,19 +63,24 @@ export async function searchCities(query: string): Promise<City[]> {
 
     const results: City[] = data
       .filter((item: any) => item.lat && item.lon)
-      .map((item: any) => ({
-        city: item.name || item.address?.city || item.address?.town || "",
-        country: item.address?.country || "",
-        lat: parseFloat(item.lat),
-        lng: parseFloat(item.lon),
-      }))
-      .filter((c: City) => c.city && c.country)
+      .map((item: any) => {
+        const lat = parseFloat(item.lat);
+        const lng = parseFloat(item.lon);
+        return {
+          city: item.name || item.address?.city || item.address?.town || "",
+          country: item.address?.country || "",
+          lat: isFinite(lat) ? lat : 0,
+          lng: isFinite(lng) ? lng : 0,
+        };
+      })
+      .filter((c: City) => c.city && c.country && isFinite(c.lat) && isFinite(c.lng) && (c.lat !== 0 || c.lng !== 0))
       .slice(0, 10);
 
     return results.length > 0 ? results : CITIES.filter(
       (c) => c.city.toLowerCase().includes(q.toLowerCase()) || c.country.toLowerCase().includes(q.toLowerCase()),
     ).slice(0, 6);
-  } catch {
+  } catch (err) {
+    console.error("City search error:", err);
     return CITIES.filter(
       (c) => c.city.toLowerCase().includes(q.toLowerCase()) || c.country.toLowerCase().includes(q.toLowerCase()),
     ).slice(0, 6);
