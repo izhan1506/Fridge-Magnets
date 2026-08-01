@@ -232,7 +232,12 @@ export async function getPublicFridges(
     .select("*")
     .eq("map_public", true);
 
-  if (profileError) throw profileError;
+  if (profileError) {
+    console.error("[Store] Error fetching public profiles:", profileError);
+    throw profileError;
+  }
+
+  console.log(`[Store] Found ${profiles?.length || 0} public profiles`);
 
   // Batch fetch magnets for all those users
   const profileIds = (profiles || []).map((p) => p.id);
@@ -245,8 +250,13 @@ export async function getPublicFridges(
       .in("user_id", profileIds)
       .order("created_at", { ascending: false });
 
-    if (magError) throw magError;
+    if (magError) {
+      console.error("[Store] Error fetching public magnets:", magError);
+      throw magError;
+    }
+
     magnets = magData || [];
+    console.log(`[Store] Found ${magnets.length} magnets from public profiles`);
   }
 
   // Group magnets by user
@@ -260,12 +270,15 @@ export async function getPublicFridges(
   );
 
   // Build PublicFridge[] and filter excludeUserId
-  return (profiles || [])
+  const fridges = (profiles || [])
     .map((p) => ({
       profile: profileFromRow(p),
       magnets: magsByUser[p.id] || [],
     }))
     .filter((f) => f.profile.id !== excludeUserId);
+
+  console.log(`[Store] Returning ${fridges.length} public fridges (excluded: ${excludeUserId})`);
+  return fridges;
 }
 
 export async function getFridge(userId: string): Promise<PublicFridge | null> {
