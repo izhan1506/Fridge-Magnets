@@ -12,6 +12,7 @@ import { MapScreen } from "./components/screens/MapScreen";
 import { AddMagnet } from "./components/screens/AddMagnet";
 import { SettingsScreen } from "./components/screens/SettingsScreen";
 import { MagnetSettings } from "./components/screens/MagnetSettings";
+import { DesignSystem } from "./components/screens/DesignSystem";
 
 function Splash() {
   return (
@@ -45,6 +46,7 @@ function PublicOnly({ children }: { children: React.ReactNode }) {
 function Router() {
   return (
     <Routes>
+      <Route path="/designsystem" element={<DesignSystem />} />
       <Route path="/welcome" element={<PublicOnly><Welcome /></PublicOnly>} />
       <Route path="/auth" element={<PublicOnly><Auth /></PublicOnly>} />
       <Route path="/onboarding/home" element={<Protected><SetHomeBase /></Protected>} />
