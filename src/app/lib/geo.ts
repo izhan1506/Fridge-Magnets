@@ -49,12 +49,37 @@ export function nearestCity(lat: number, lng: number): City {
   );
 }
 
-export function searchCities(query: string): City[] {
-  const q = query.trim().toLowerCase();
+export async function searchCities(query: string): Promise<City[]> {
+  const q = query.trim();
   if (!q) return [];
-  return CITIES.filter(
-    (c) => c.city.toLowerCase().includes(q) || c.country.toLowerCase().includes(q),
-  ).slice(0, 6);
+
+  try {
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/search?city=${encodeURIComponent(q)}&format=json&limit=10`,
+      { headers: { Accept: "application/json" } },
+    );
+    if (!res.ok) throw new Error("search failed");
+    const data = await res.json();
+
+    const results: City[] = data
+      .filter((item: any) => item.lat && item.lon)
+      .map((item: any) => ({
+        city: item.name || item.address?.city || item.address?.town || "",
+        country: item.address?.country || "",
+        lat: parseFloat(item.lat),
+        lng: parseFloat(item.lon),
+      }))
+      .filter((c: City) => c.city && c.country)
+      .slice(0, 10);
+
+    return results.length > 0 ? results : CITIES.filter(
+      (c) => c.city.toLowerCase().includes(q.toLowerCase()) || c.country.toLowerCase().includes(q.toLowerCase()),
+    ).slice(0, 6);
+  } catch {
+    return CITIES.filter(
+      (c) => c.city.toLowerCase().includes(q.toLowerCase()) || c.country.toLowerCase().includes(q.toLowerCase()),
+    ).slice(0, 6);
+  }
 }
 
 // Cache reverse-geocode lookups so repeat taps near the same spot don't

@@ -12,7 +12,25 @@ export function SetHomeBase() {
   const { updateProfile, onboarded } = useSession();
   const [query, setQuery] = useState("");
   const [pick, setPick] = useState<{ lat: number; lng: number; label: string } | null>(null);
-  const results = searchCities(query);
+  const [results, setResults] = useState<Array<{ city: string; country: string; lat: number; lng: number }>>([]);
+  const [searching, setSearching] = useState(false);
+
+  const handleSearch = async (value: string) => {
+    setQuery(value);
+    if (!value.trim()) {
+      setResults([]);
+      return;
+    }
+    setSearching(true);
+    try {
+      const cities = await searchCities(value);
+      setResults(cities);
+    } catch {
+      setResults([]);
+    } finally {
+      setSearching(false);
+    }
+  };
 
   async function confirm() {
     if (!pick) return;
@@ -42,16 +60,27 @@ export function SetHomeBase() {
         <SearchBar
           placeholder="Search for your city"
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={(e) => handleSearch(e.target.value)}
         />
-        {results.length > 0 && (
+        {(results.length > 0 || searching) && (
           <div className="relative z-20 mt-2 max-h-64 overflow-y-auto rounded-2xl bg-card shadow-lg">
+            {searching && (
+              <div className="flex items-center justify-center px-4 py-6 text-muted-foreground text-sm">
+                Searching cities...
+              </div>
+            )}
+            {!searching && results.length === 0 && query.trim() && (
+              <div className="flex items-center justify-center px-4 py-6 text-muted-foreground text-sm">
+                No cities found. Try another search or tap the map.
+              </div>
+            )}
             {results.map((c) => (
               <button
-                key={`${c.city}-${c.country}`}
+                key={`${c.city}-${c.country}-${c.lat}`}
                 onClick={() => {
                   setPick({ lat: c.lat, lng: c.lng, label: `${c.city}, ${c.country}` });
                   setQuery("");
+                  setResults([]);
                 }}
                 className="flex w-full items-center gap-2 px-4 py-3 text-left hover:bg-muted"
               >
