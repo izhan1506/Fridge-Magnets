@@ -115,7 +115,7 @@ export function BottomNavBar({
   onAdd: () => void;
 }) {
   return (
-    <div className="absolute inset-x-0 bottom-0 z-20 flex h-24 items-center justify-center gap-3 bg-black/40 backdrop-blur-[13px]">
+    <div className="absolute inset-x-0 bottom-0 z-10 flex h-24 items-center justify-center gap-3 bg-black/40 backdrop-blur-[13px]">
       <GlassTabNav value={value} onChange={onTabChange} />
       <GlassIconButton label="Add magnet" onClick={onAdd} />
     </div>
