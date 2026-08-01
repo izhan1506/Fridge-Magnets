@@ -90,20 +90,24 @@ export function PinPreviewCard({
           <h3 className="font-fridge">{fridge.profile.name}'s fridge</h3>
           <p className="text-muted-foreground">{fridge.profile.homeLabel}</p>
         </div>
-        <button onClick={onClose} className="text-muted-foreground">✕</button>
+        <button onClick={onClose} className="text-muted-foreground hover:text-foreground">✕</button>
       </div>
       <div className="mt-3 flex gap-2 overflow-hidden">
         {fridge.magnets.slice(0, 4).map((m) => (
           <span
             key={m.id}
-            className="h-14 w-14 shrink-0 overflow-hidden rounded-xl"
+            className="h-14 w-14 shrink-0 overflow-hidden rounded-xl cursor-pointer"
             style={{ backgroundColor: MAGNET_COLORS[m.color], rotate: `${m.rotation}deg` }}
+            onClick={onView}
           >
             {m.photoUrl && <ImageWithFallback src={m.photoUrl} alt={m.city} className="h-full w-full object-cover" />}
           </span>
         ))}
       </div>
-      <M3Button full className="mt-4" onClick={onView}>
+      <M3Button full className="mt-4 relative z-30" onClick={() => {
+        console.log("[PinPreviewCard] View full fridge clicked");
+        onView();
+      }}>
         View full fridge
       </M3Button>
     </motion.div>
