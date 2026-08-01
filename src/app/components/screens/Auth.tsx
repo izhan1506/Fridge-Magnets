@@ -69,7 +69,7 @@ export function Auth() {
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-4 top-14 flex items-center justify-center text-muted-foreground hover:text-foreground transition"
+            className="absolute right-4 top-11 flex items-center justify-center text-muted-foreground hover:text-foreground transition"
             aria-label={showPassword ? "Hide password" : "Show password"}
           >
             {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
