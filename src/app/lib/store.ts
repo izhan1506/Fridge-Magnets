@@ -269,13 +269,21 @@ export async function getPublicFridges(
     {} as Record<string, Magnet[]>,
   );
 
-  // Build PublicFridge[] and filter excludeUserId
+  // Build PublicFridge[] and filter excludeUserId + invalid coordinates
   const fridges = (profiles || [])
     .map((p) => ({
       profile: profileFromRow(p),
       magnets: magsByUser[p.id] || [],
     }))
-    .filter((f) => f.profile.id !== excludeUserId);
+    .filter((f) => f.profile.id !== excludeUserId)
+    .filter((f) => {
+      // Only show fridges with valid coordinates (not 0,0)
+      const hasValidCoords = f.profile.homeLat !== 0 || f.profile.homeLng !== 0;
+      if (!hasValidCoords) {
+        console.log(`[Store] Skipping fridge ${f.profile.name} — invalid coordinates (0,0)`);
+      }
+      return hasValidCoords;
+    });
 
   console.log(`[Store] Returning ${fridges.length} public fridges (excluded: ${excludeUserId})`);
   return fridges;

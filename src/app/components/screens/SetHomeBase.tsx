@@ -43,6 +43,9 @@ export function SetHomeBase() {
       if (!isFinite(payload.homeLat) || !isFinite(payload.homeLng)) {
         throw new Error("Invalid coordinates");
       }
+      if (payload.homeLat === 0 && payload.homeLng === 0) {
+        throw new Error("Please select a real location, not (0,0)");
+      }
       await updateProfile(payload);
       toast.success("Home base set");
       nav("/fridge", { replace: true });
