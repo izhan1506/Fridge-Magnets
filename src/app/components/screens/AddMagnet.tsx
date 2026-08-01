@@ -36,6 +36,7 @@ export function AddMagnet() {
   const [instagram, setInstagram] = useState("");
   const [tripPhoto, setTripPhoto] = useState<string | null>(null);
   const [saved, setSaved] = useState<Magnet | null>(null);
+  const [processingError, setProcessingError] = useState<string>("");
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -117,12 +118,15 @@ export function AddMagnet() {
   // ── 3. Background removal ──
   async function process(blob: Blob) {
     setStep("processing");
+    setProcessingError("");
     try {
       const out = await removeMagnetBackground(blob);
       setCutout(await blobToDataUrl(out));
       setCutoutBlob(out);
       setStep("cutout");
-    } catch {
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : "Background removal failed";
+      setProcessingError(msg);
       setStep("processing-failed");
     }
   }
@@ -247,7 +251,7 @@ export function AddMagnet() {
       <ErrorState
         icon={<AlertTriangle size={40} />}
         title="Background removal failed"
-        body="Try taking a photo with a clearer background, better lighting, or a less complex scene. Sometimes the processing is just overloaded — retrying can help."
+        body={processingError || "Try taking a photo with a clearer background, better lighting, or a less complex scene. Sometimes the processing is just overloaded — retrying can help."}
         primaryLabel="Retry"
         onPrimary={() => rawBlob && process(rawBlob)}
         secondary={

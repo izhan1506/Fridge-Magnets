@@ -57,8 +57,18 @@ async function compressImage(blob: Blob, maxWidth = 1024, maxHeight = 1024, qual
       );
     };
     img.onerror = () => reject(new Error("Failed to load image"));
+    img.onabort = () => reject(new Error("Image load aborted"));
     img.src = URL.createObjectURL(blob);
   });
+}
+
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error("Processing timeout — try a smaller or simpler photo")), ms)
+    )
+  ]);
 }
 
 export async function removeMagnetBackground(source: Blob): Promise<Blob> {
@@ -69,18 +79,36 @@ export async function removeMagnetBackground(source: Blob): Promise<Blob> {
     const mod = await import("@imgly/background-removal");
     removeBackground = mod.removeBackground;
   } catch {
-    throw new Error("Background removal service is unavailable");
+    throw new Error("Background removal service is unavailable — please try again");
   }
 
-  try {
-    // Compress image first to reduce memory usage and improve reliability
-    const compressed = await compressImage(source);
-    const result = await removeBackground(compressed);
-    return result;
-  } catch (error) {
-    const msg = error instanceof Error ? error.message : "Unknown error";
-    throw new Error(`Background removal failed: ${msg} — try a different photo or a clearer background`);
+  // Retry with progressively more aggressive compression
+  const attempts = [
+    { width: 1024, height: 1024, quality: 0.8, timeout: 30000 },
+    { width: 768, height: 768, quality: 0.7, timeout: 25000 },
+    { width: 512, height: 512, quality: 0.6, timeout: 20000 },
+  ];
+
+  let lastError: Error | null = null;
+
+  for (const attempt of attempts) {
+    try {
+      const compressed = await compressImage(source, attempt.width, attempt.height, attempt.quality);
+      const result = await withTimeout(removeBackground(compressed), attempt.timeout);
+      return result;
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error("Unknown error");
+      // Continue to next attempt
+      continue;
+    }
   }
+
+  // All attempts failed
+  const msg = lastError?.message || "Unknown error";
+  if (msg.includes("timeout") || msg.includes("unavailable")) {
+    throw new Error(`${msg} — try a smaller photo or simpler background`);
+  }
+  throw new Error(`Background removal failed: ${msg} — try a different photo`);
 }
 
 export function blobToDataUrl(blob: Blob): Promise<string> {
