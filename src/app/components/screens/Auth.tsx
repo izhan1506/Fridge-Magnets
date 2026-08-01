@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
+import { Eye, EyeOff } from "lucide-react";
 import { toast } from "../../lib/toast";
 import { M3Button, TextField } from "../chrome";
 import { useSession } from "../../lib/session";
@@ -11,6 +12,7 @@ export function Auth() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [busy, setBusy] = useState(false);
 
   async function submit() {
@@ -47,7 +49,7 @@ export function Auth() {
 
       <div className="mt-8 space-y-4">
         {mode === "signup" && (
-          <TextField label="Name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Priya" />
+          <TextField label="Name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" />
         )}
         <TextField
           label="Email"
@@ -56,13 +58,23 @@ export function Auth() {
           onChange={(e) => setEmail(e.target.value)}
           placeholder="you@example.com"
         />
-        <TextField
-          label="Password"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="••••••••"
-        />
+        <div className="relative">
+          <TextField
+            label="Password"
+            type={showPassword ? "text" : "password"}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="••••••••"
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            aria-label={showPassword ? "Hide password" : "Show password"}
+          >
+            {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+          </button>
+        </div>
       </div>
 
       <M3Button full className="mt-8" disabled={busy || !email || !password} onClick={submit}>
