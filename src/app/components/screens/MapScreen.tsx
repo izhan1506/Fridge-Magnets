@@ -48,23 +48,30 @@ export function MapScreen() {
 
   useEffect(() => {
     (async () => {
-      const publicFridges = await getPublicFridges(profile?.id);
-      // Always include current user's fridge if they have a home base set
-      if (profile && profile.homeLat !== 0 && profile.homeLng !== 0) {
-        const userFridge: PublicFridge = {
-          profile: {
-            id: profile.id,
-            name: profile.name,
-            homeLat: profile.homeLat,
-            homeLng: profile.homeLng,
-            homeLabel: profile.homeLabel,
-            mapPublic: profile.mapPublic,
-          },
-          magnets: magnets,
-        };
-        setFridges([userFridge, ...publicFridges]);
-      } else {
-        setFridges(publicFridges);
+      try {
+        const publicFridges = await getPublicFridges(profile?.id);
+        console.log(`[Map] Loaded ${publicFridges.length} public fridges`);
+
+        // Always include current user's fridge if they have a home base set
+        if (profile && profile.homeLat !== 0 && profile.homeLng !== 0) {
+          const userFridge: PublicFridge = {
+            profile: {
+              id: profile.id,
+              name: profile.name,
+              homeLat: profile.homeLat,
+              homeLng: profile.homeLng,
+              homeLabel: profile.homeLabel,
+              mapPublic: profile.mapPublic,
+            },
+            magnets: magnets,
+          };
+          console.log(`[Map] Including current user's fridge (${magnets.length} magnets)`);
+          setFridges([userFridge, ...publicFridges]);
+        } else {
+          setFridges(publicFridges);
+        }
+      } catch (error) {
+        console.error("[Map] Error loading public fridges:", error);
       }
     })();
   }, [profile?.id, profile?.homeLat, profile?.homeLng, magnets]);

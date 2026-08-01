@@ -38,7 +38,9 @@
       "Read(//tmp/**)",
       "Bash(curl -s http://localhost:5178/designsystem)",
       "Bash(git commit -m ' *)",
-      "Bash(curl -s \"https://onsiren.vercel.app/#foundations\")"
+      "Bash(curl -s \"https://onsiren.vercel.app/#foundations\")",
+      "Bash(cat)",
+      "Read(//private/tmp/claude-501/**)"
     ]
   }
 }
