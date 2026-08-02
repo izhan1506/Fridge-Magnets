@@ -2,6 +2,7 @@ import { useNavigate } from "react-router";
 import { motion } from "motion/react";
 import type { Magnet, PublicFridge } from "../lib/types";
 import { MAGNET_COLORS } from "../lib/skins";
+import { generateFridgeId } from "../lib/fridge-id";
 import { ImageWithFallback } from "./figma/ImageWithFallback";
 import { M3Button } from "./chrome";
 
@@ -80,8 +81,9 @@ export function PinPreviewCard({
   const nav = useNavigate();
 
   const handleViewFridge = () => {
-    console.log(`[PinPreviewCard] Navigating to /fridge/${fridge.profile.id}`);
-    nav(`/fridge/${fridge.profile.id}`);
+    const fridgeId = generateFridgeId(fridge.profile.id);
+    console.log(`[PinPreviewCard] Navigating to /fridge/${fridgeId} (userId: ${fridge.profile.id})`);
+    nav(`/fridge/${fridgeId}`, { state: { userId: fridge.profile.id } });
   };
 
   return (

@@ -1,22 +1,27 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router";
+import { useNavigate, useParams, useLocation } from "react-router";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import type { PublicFridge } from "../../lib/types";
 import { getFridge } from "../../lib/store";
+import { generateFridgeId } from "../../lib/fridge-id";
 import { BottomNavBar } from "../glass-nav";
 import { FridgeView } from "./FridgeView";
 
 export function OtherFridge() {
   const nav = useNavigate();
-  const { userId } = useParams();
+  const { fridgeId } = useParams();
+  const location = useLocation();
   const [fridge, setFridge] = useState<PublicFridge | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Get userId from state (passed via nav) or try to derive it
+  const userId = (location.state as { userId?: string })?.userId;
 
   useEffect(() => {
     (async () => {
       setLoading(true);
       try {
-        console.log(`[OtherFridge] Loading fridge for userId: ${userId}`);
+        console.log(`[OtherFridge] Loading fridge for fridgeId: ${fridgeId}, userId: ${userId}`);
         const data = userId ? await getFridge(userId) : null;
         console.log(`[OtherFridge] Loaded fridge:`, data);
         setFridge(data);
@@ -35,7 +40,10 @@ export function OtherFridge() {
         <button onClick={() => nav(-1)} className="rounded-xl border border-white/30 bg-white/15 p-2 backdrop-blur-[7px] transition hover:bg-white/25">
           <ArrowLeft size={22} />
         </button>
-        <h2>{fridge ? `${fridge.profile.name}'s fridge` : "Fridge"}</h2>
+        <div className="flex-1">
+          <h2>{fridge ? `${fridge.profile.name}'s fridge` : "Fridge"}</h2>
+          {fridgeId && <p className="text-xs text-muted-foreground mt-0.5">{fridgeId}</p>}
+        </div>
       </div>
       <div className="flex flex-1 flex-col bg-background">
         {loading ? (

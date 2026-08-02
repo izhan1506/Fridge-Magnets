@@ -14,6 +14,7 @@ export interface Profile {
   homeLng: number;
   homeLabel: string;
   mapPublic: boolean;
+  fridgeId?: string; // Unique fridge ID like "fridge-4234"
 }
 
 export interface Magnet {
