@@ -87,7 +87,15 @@ export function MapScreen() {
           id: `c-${c.id}`,
           lat: c.lat,
           lng: c.lng,
-          render: () => <ClusterBubble count={c.fridges.length} onClick={() => setExpanded(c.id)} />,
+          render: () => (
+            <ClusterBubble
+              count={c.fridges.length}
+              onClick={() => {
+                console.log(`[Map] Cluster clicked: ${c.id}`);
+                setExpanded(c.id);
+              }}
+            />
+          ),
         });
       } else {
         for (const f of c.fridges) {
@@ -95,7 +103,15 @@ export function MapScreen() {
             id: f.profile.id,
             lat: f.profile.homeLat,
             lng: f.profile.homeLng,
-            render: () => <HomePin fridge={f} onClick={() => setSelected(f)} />,
+            render: () => (
+              <HomePin
+                fridge={f}
+                onClick={() => {
+                  console.log(`[Map] Pin clicked for fridge: ${f.profile.name} (${f.profile.id})`);
+                  setSelected(f);
+                }}
+              />
+            ),
           });
         }
       }

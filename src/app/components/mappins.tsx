@@ -1,3 +1,4 @@
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router";
 import { motion } from "motion/react";
 import type { Magnet, PublicFridge } from "../lib/types";
@@ -30,10 +31,16 @@ export function HomePin({ fridge, onClick }: { fridge: PublicFridge; onClick: ()
   const top = featuredMagnet(fridge);
   return (
     <motion.button
-      onClick={onClick}
+      onClick={(e) => {
+        console.log(`[HomePin] Clicked for ${fridge.profile.name}`);
+        e.preventDefault();
+        e.stopPropagation();
+        onClick();
+      }}
       whileHover={{ scale: 1.08, y: -2 }}
       whileTap={{ scale: 0.94 }}
-      className="relative flex flex-col items-center"
+      className="relative flex flex-col items-center pointer-events-auto cursor-pointer"
+      type="button"
     >
       <span
         className="h-16 w-16 overflow-hidden rounded-[20px] border-[3px] border-white shadow-[0_10px_20px_rgba(0,0,0,0.28)]"
@@ -82,9 +89,13 @@ export function PinPreviewCard({
 
   const handleViewFridge = () => {
     const fridgeId = generateFridgeId(fridge.profile.id);
-    console.log(`[PinPreviewCard] Navigating to /fridge/${fridgeId} (userId: ${fridge.profile.id})`);
+    console.log(`[PinPreviewCard] Button clicked! Navigating to /fridge/${fridgeId} (userId: ${fridge.profile.id})`);
     nav(`/fridge/${fridgeId}`, { state: { userId: fridge.profile.id } });
   };
+
+  useEffect(() => {
+    console.log(`[PinPreviewCard] Rendered for fridge: ${fridge.profile.name}`);
+  }, [fridge.profile.name]);
 
   return (
     <motion.div
