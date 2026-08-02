@@ -92,7 +92,7 @@ const TABS: { id: "fridge" | "map"; label: string }[] = [
 
 /**
  * Glass toggle — Fridge/Map switcher in the bottom nav.
- * Animates an underlay pill when switching between tabs.
+ * Animates an underlay pill when switching between tabs with smooth transitions.
  *
  * @param value - Current tab: "fridge" | "map"
  * @param onChange - Callback fired when tab changes
@@ -107,8 +107,11 @@ export function GlassTabToggle({ value, onChange }: GlassTabNavProps) {
     <div className="relative flex h-[68px] w-48 items-center overflow-hidden rounded-[21px] border border-white/30 bg-white/15 backdrop-blur-[7px]">
       {/* Animated pill background */}
       <div
-        className="absolute top-1 bottom-1 left-1 w-[calc(50%-4px)] rounded-[18px] bg-black/80 backdrop-blur-[7px] transition-transform duration-400 ease-in-out"
-        style={{ transform: `translateX(${pillPosition})` }}
+        className="absolute top-1 bottom-1 left-1 w-[calc(50%-4px)] rounded-[18px] bg-black/80 backdrop-blur-[7px]"
+        style={{
+          transform: `translateX(${pillPosition})`,
+          transition: "transform 500ms cubic-bezier(0.32, 0.72, 0.29, 1)",
+        }}
       />
 
       {/* Tab buttons */}
@@ -121,9 +124,12 @@ export function GlassTabToggle({ value, onChange }: GlassTabNavProps) {
             className="relative flex h-full flex-1 items-center justify-center rounded-[20px]"
           >
             <span
-              className={`relative z-10 text-[13px] leading-[19px] transition-colors duration-200 font-medium ${
-                active ? "text-white" : "text-white/85"
+              className={`relative z-10 text-[13px] leading-[19px] font-medium transition-all duration-300 ${
+                active ? "text-white opacity-100 scale-100" : "text-white/70 opacity-90 scale-95"
               }`}
+              style={{
+                transformOrigin: "center",
+              }}
             >
               {t.label}
             </span>
