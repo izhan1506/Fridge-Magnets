@@ -18,8 +18,11 @@ export function FridgeIllustration({ className = "" }: { className?: string }) {
   return (
     <svg
       viewBox={`0 0 ${VB_W} ${VB_H}`}
-      className={className}
-      style={{ filter: "drop-shadow(0 24px 26px rgba(0,0,0,0.24))" }}
+      className={`${className}`}
+      style={{
+        filter: "drop-shadow(0 24px 26px rgba(0,0,0,0.24))",
+        aspectRatio: `${VB_W} / ${VB_H}`
+      }}
     >
       <defs>
         <linearGradient id="fridge-body" x1="0" y1="0" x2="1" y2="0.12">
