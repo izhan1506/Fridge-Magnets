@@ -40,10 +40,7 @@ export function OtherFridge() {
         <button onClick={() => nav(-1)} className="rounded-xl border border-white/30 bg-white/15 p-2 backdrop-blur-[7px] transition hover:bg-white/25">
           <ArrowLeft size={22} />
         </button>
-        <div className="flex-1">
-          <h2>{fridge ? `${fridge.profile.name}'s fridge` : "Fridge"}</h2>
-          {fridgeId && <p className="text-xs text-muted-foreground mt-0.5">{fridgeId}</p>}
-        </div>
+        <h2 className="font-fridge text-[1.4rem]">{fridge ? `${fridge.profile.name}'s fridge` : "Fridge"}</h2>
       </div>
       <div className="flex flex-1 flex-col bg-background">
         {loading ? (
