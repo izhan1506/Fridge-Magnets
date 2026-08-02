@@ -10,7 +10,8 @@ import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 import { Switch } from "../ui/switch";
 import { Label } from "../ui/label";
 import { Alert, AlertDescription } from "../ui/alert";
-import { Eye, EyeOff, AlertCircle, CheckCircle, Info, ChevronRight, Menu, X } from "lucide-react";
+import { Eye, EyeOff, AlertCircle, CheckCircle, Info, ChevronRight, Menu, X, Plus, Bell } from "lucide-react";
+import { M3Button, GlassTabToggle, GlassIconButton, GlassSquareIconButton, BottomNavBar } from "../design-system";
 
 export function DesignSystem() {
   const [showPassword, setShowPassword] = useState(false);
@@ -20,6 +21,7 @@ export function DesignSystem() {
     components: true,
   });
   const [activeSection, setActiveSection] = useState("overview");
+  const [tab, setTab] = useState<"fridge" | "map">("fridge");
 
   const toggleGroup = (group: string) => {
     setExpandedGroups((prev) => ({
@@ -220,50 +222,126 @@ export function DesignSystem() {
               <p className="mt-2 text-muted-foreground">Interactive button styles and states</p>
             </div>
 
-            <div>
-              <h2 className="mb-4 text-xl font-medium">Variants</h2>
-              <div className="flex flex-wrap gap-3">
-                <Button>Primary</Button>
-                <Button variant="secondary">Secondary</Button>
-                <Button variant="outline">Outline</Button>
-                <Button variant="ghost">Ghost</Button>
-                <Button variant="destructive">Destructive</Button>
+            {/* Shadcn UI Buttons */}
+            <div className="space-y-4">
+              <h2 className="text-xl font-medium">Shadcn/UI Buttons</h2>
+
+              <div>
+                <h3 className="mb-2 text-sm font-medium text-muted-foreground">Variants</h3>
+                <div className="flex flex-wrap gap-3">
+                  <Button>Primary</Button>
+                  <Button variant="secondary">Secondary</Button>
+                  <Button variant="outline">Outline</Button>
+                  <Button variant="ghost">Ghost</Button>
+                  <Button variant="destructive">Destructive</Button>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="mb-2 text-sm font-medium text-muted-foreground">Sizes</h3>
+                <div className="flex flex-wrap items-center gap-3">
+                  <Button size="sm">Small</Button>
+                  <Button size="default">Default</Button>
+                  <Button size="lg">Large</Button>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="mb-2 text-sm font-medium text-muted-foreground">States</h3>
+                <div className="flex flex-wrap gap-3">
+                  <Button>Normal</Button>
+                  <Button disabled>Disabled</Button>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="mb-2 text-sm font-medium text-muted-foreground">All Variants Disabled</h3>
+                <div className="flex flex-wrap gap-3">
+                  <Button disabled>Primary</Button>
+                  <Button variant="secondary" disabled>Secondary</Button>
+                  <Button variant="outline" disabled>Outline</Button>
+                  <Button variant="ghost" disabled>Ghost</Button>
+                  <Button variant="destructive" disabled>Destructive</Button>
+                </div>
               </div>
             </div>
 
-            <div>
-              <h2 className="mb-4 text-xl font-medium">Sizes</h2>
-              <div className="flex flex-wrap items-center gap-3">
-                <Button size="sm">Small</Button>
-                <Button size="default">Default</Button>
-                <Button size="lg">Large</Button>
+            <Separator />
+
+            {/* Material 3 Buttons */}
+            <div className="space-y-4">
+              <h2 className="text-xl font-medium">Material 3 Buttons</h2>
+
+              <div>
+                <h3 className="mb-2 text-sm font-medium text-muted-foreground">Variants</h3>
+                <div className="flex flex-wrap gap-3">
+                  <M3Button variant="filled">Filled</M3Button>
+                  <M3Button variant="tonal">Tonal</M3Button>
+                  <M3Button variant="outline">Outline</M3Button>
+                  <M3Button variant="text">Text</M3Button>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="mb-2 text-sm font-medium text-muted-foreground">With Icon</h3>
+                <div className="flex flex-wrap gap-3">
+                  <M3Button variant="filled" icon={<Plus size={18} />}>Add</M3Button>
+                  <M3Button variant="tonal" icon={<CheckCircle size={18} />}>Save</M3Button>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="mb-2 text-sm font-medium text-muted-foreground">Full Width</h3>
+                <div className="space-y-2 max-w-xs">
+                  <M3Button variant="filled" full>Full Width Filled</M3Button>
+                  <M3Button variant="tonal" full>Full Width Tonal</M3Button>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="mb-2 text-sm font-medium text-muted-foreground">States</h3>
+                <div className="flex flex-wrap gap-3">
+                  <M3Button variant="filled">Normal</M3Button>
+                  <M3Button variant="filled" disabled>Disabled</M3Button>
+                </div>
               </div>
             </div>
 
-            <div>
-              <h2 className="mb-4 text-xl font-medium">States</h2>
-              <div className="flex flex-wrap gap-3">
-                <Button>Normal</Button>
-                <Button disabled>Disabled</Button>
-              </div>
-            </div>
+            <Separator />
 
-            <div>
-              <h2 className="mb-4 text-xl font-medium">All Variants Disabled</h2>
-              <div className="flex flex-wrap gap-3">
-                <Button disabled>Primary</Button>
-                <Button variant="secondary" disabled>
-                  Secondary
-                </Button>
-                <Button variant="outline" disabled>
-                  Outline
-                </Button>
-                <Button variant="ghost" disabled>
-                  Ghost
-                </Button>
-                <Button variant="destructive" disabled>
-                  Destructive
-                </Button>
+            {/* Glass Navigation Buttons */}
+            <div className="space-y-4">
+              <h2 className="text-xl font-medium">Glass Buttons (Navigation & App Chrome)</h2>
+
+              <div>
+                <h3 className="mb-2 text-sm font-medium text-muted-foreground">Fridge/Map Toggle</h3>
+                <p className="mb-3 text-xs text-muted-foreground">Switch between Fridge and Map views with animated pill</p>
+                <div className="bg-card p-4 rounded-lg border border-border flex justify-center">
+                  <GlassTabToggle value={tab} onChange={setTab} />
+                </div>
+              </div>
+
+              <div>
+                <h3 className="mb-2 text-sm font-medium text-muted-foreground">Add Magnet Button (Icon)</h3>
+                <p className="mb-3 text-xs text-muted-foreground">Primary orange button for main action in bottom nav</p>
+                <div className="bg-card p-4 rounded-lg border border-border flex justify-center">
+                  <GlassIconButton label="Add magnet" />
+                </div>
+              </div>
+
+              <div>
+                <h3 className="mb-2 text-sm font-medium text-muted-foreground">Square Icon Buttons (Header)</h3>
+                <p className="mb-3 text-xs text-muted-foreground">Frosted glass buttons for header actions</p>
+                <div className="bg-card p-4 rounded-lg border border-border flex gap-3">
+                  <GlassSquareIconButton
+                    icon={<Bell size={20} />}
+                    label="Notifications"
+                  />
+                  <GlassSquareIconButton
+                    icon={<CheckCircle size={20} />}
+                    label="Verified"
+                  />
+                </div>
               </div>
             </div>
           </div>

@@ -20,7 +20,7 @@ export function Auth() {
     try {
       if (mode === "signup") await signUp(email.trim(), password, name.trim() || "You");
       else await signIn(email.trim(), password);
-      nav("/onboarding/home");
+      nav("/fridge");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Something went wrong");
     } finally {
@@ -32,7 +32,7 @@ export function Auth() {
     setBusy(true);
     try {
       await signInWithGoogle();
-      nav("/onboarding/home");
+      nav("/fridge");
     } catch {
       toast.error("Could not sign in with Google");
     } finally {
@@ -105,7 +105,8 @@ export function Auth() {
       </M3Button>
 
       <button
-        className="mt-auto pt-8 text-center text-primary"
+        type="button"
+        className="mt-auto pt-8 text-center text-primary hover:text-primary/80 transition cursor-pointer"
         onClick={() => setMode(mode === "signup" ? "login" : "signup")}
       >
         {mode === "signup" ? "Already have an account? Log in" : "New here? Create an account"}

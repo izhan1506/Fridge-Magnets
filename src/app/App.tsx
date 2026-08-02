@@ -27,12 +27,22 @@ function Splash() {
 function Protected({ children }: { children: React.ReactNode }) {
   const { profile, loading, onboarded } = useSession();
   const location = useLocation();
+
   if (loading) return <Splash />;
   if (!profile) return <Navigate to="/welcome" replace />;
-  if (!onboarded && !location.pathname.startsWith("/onboarding")) {
-    return <Navigate to="/onboarding/home" replace />;
+
+  // If already on onboarding path, let them proceed (don't redirect back)
+  if (location.pathname.startsWith("/onboarding")) {
+    return <>{children}</>;
   }
-  return <>{children}</>;
+
+  // If onboarding is complete, let them access fridge/map/etc
+  if (onboarded) {
+    return <>{children}</>;
+  }
+
+  // Only redirect to onboarding if NOT onboarded AND NOT already there
+  return <Navigate to="/onboarding/home" replace />;
 }
 
 /** Public routes bounce signed-in users to their fridge. */

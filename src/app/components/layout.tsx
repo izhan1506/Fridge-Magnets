@@ -24,7 +24,7 @@ function StatusBar() {
 export function PhoneFrame({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen w-full overflow-y-auto bg-[#0b0b0b] flex items-center justify-center py-6">
-      {/* Desktop: Fixed frame with rounded corners and shadow */}
+      {/* Desktop: Fixed phone frame (mobile preview) */}
       <div
         className="hidden md:block relative bg-background shadow-xl overflow-hidden rounded-[2.25rem]"
         style={{ width: DEVICE_W, height: DEVICE_H }}

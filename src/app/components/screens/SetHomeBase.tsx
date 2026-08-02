@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router";
 import { MapPin, ArrowLeft } from "lucide-react";
 import { toast } from "../../lib/toast";
-import { M3Button, SearchBar } from "../chrome";
+import { M3Button, SearchBar, ScreenHeading } from "../chrome";
 import { WorldMap } from "../worldmap";
 import { searchCities, reverseGeocode } from "../../lib/geo";
 import { useSession } from "../../lib/session";
@@ -65,10 +65,10 @@ export function SetHomeBase() {
     <div className="relative flex h-full flex-col">
       <div className="absolute inset-x-0 top-0 z-10 px-4 pb-4 pt-14">
         <div className="mb-3 flex items-center gap-3">
-          <button onClick={() => nav(-1)} className="rounded-xl border border-white/30 bg-white/15 p-2 text-white backdrop-blur-[7px] transition hover:bg-white/25">
+          <button onClick={() => nav(-1)} className="rounded-xl border border-white/30 bg-black/60 text-white backdrop-blur-[7px] transition hover:bg-black/70 p-2">
             <ArrowLeft size={20} />
           </button>
-          <h2 className="text-foreground font-bold">Set your home base</h2>
+          <ScreenHeading>Set your home base</ScreenHeading>
         </div>
         <SearchBar
           placeholder="Search for your city"

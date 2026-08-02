@@ -40,7 +40,18 @@
       "Bash(git commit -m ' *)",
       "Bash(curl -s \"https://onsiren.vercel.app/#foundations\")",
       "Bash(cat)",
-      "Read(//private/tmp/claude-501/**)"
+      "Read(//private/tmp/claude-501/**)",
+      "Bash(grep -E \"\\\\.\\(tsx|ts\\)$\")",
+      "Bash(curl -s http://localhost:5181/designsystem)",
+      "Bash(cat /tmp/dev.log | tail -30)",
+      "Read(//private/tmp/**)",
+      "Bash(node /tmp/test_buttons.mjs)",
+      "Bash(pkill -f \"node.*vite\")",
+      "Bash(sleep 2 && tail -20 /tmp/vite.log)",
+      "Bash(curl -s http://localhost:5173/)",
+      "Bash(curl -s http://localhost:5173/designsystem)",
+      "Bash(tail -30 /tmp/vite.log)",
+      "Bash(tail -20 /tmp/vite.log)"
     ]
   }
 }

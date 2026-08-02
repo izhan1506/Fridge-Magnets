@@ -42,6 +42,7 @@ function clusterFridges(fridges: PublicFridge[]): Cluster[] {
 export function MapScreen() {
   const nav = useNavigate();
   const { profile, magnets } = useSession();
+  const [tab, setTab] = useState<"fridge" | "map">("map");
   const [fridges, setFridges] = useState<PublicFridge[]>([]);
   const [expanded, setExpanded] = useState<string | null>(null);
   const [selected, setSelected] = useState<PublicFridge | null>(null);
@@ -132,9 +133,12 @@ export function MapScreen() {
       </AnimatePresence>
 
       <BottomNavBar
-        value="map"
+        value={tab}
         onTabChange={(v) => {
-          if (v === "fridge") nav("/fridge");
+          if (v === "fridge") {
+            setTab(v);
+            nav("/fridge");
+          }
         }}
         onAdd={() => nav("/add")}
       />

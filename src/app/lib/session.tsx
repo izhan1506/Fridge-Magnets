@@ -62,12 +62,25 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
+  const onboarded = !!profile?.homeLabel && profile.homeLabel !== '' && profile.homeLat !== 0 && profile.homeLng !== 0;
+
+  // Debug logging
+  if (profile && !loading) {
+    console.log('[Session] Profile loaded:', {
+      name: profile.name,
+      homeLabel: profile.homeLabel,
+      homeLat: profile.homeLat,
+      homeLng: profile.homeLng,
+      onboarded
+    });
+  }
+
   const value = useMemo<SessionValue>(
     () => ({
       profile,
       magnets,
       loading,
-      onboarded: !!profile?.homeLabel && profile.homeLabel !== '' && profile.homeLat !== 0 && profile.homeLng !== 0,
+      onboarded,
       async signUp(email, password, name) {
         await loadFor(await store.signUp(email, password, name));
       },

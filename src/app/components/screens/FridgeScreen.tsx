@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useNavigate } from "react-router";
 import { Bell } from "lucide-react";
 import { toast } from "../../lib/toast";
@@ -8,6 +9,7 @@ import { FridgeView } from "./FridgeView";
 export function FridgeScreen() {
   const nav = useNavigate();
   const { profile, magnets } = useSession();
+  const [tab, setTab] = useState<"fridge" | "map">("fridge");
 
   if (!profile) return null;
 
@@ -32,9 +34,12 @@ export function FridgeScreen() {
       </div>
 
       <BottomNavBar
-        value="fridge"
+        value={tab}
         onTabChange={(v) => {
-          if (v === "map") nav("/map");
+          if (v === "map") {
+            setTab(v);
+            nav("/map");
+          }
         }}
         onAdd={() => nav("/add")}
       />
