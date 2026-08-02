@@ -61,7 +61,7 @@ function Router() {
       <Route path="/auth" element={<PublicOnly><Auth /></PublicOnly>} />
       <Route path="/onboarding/home" element={<Protected><SetHomeBase /></Protected>} />
       <Route path="/fridge" element={<Protected><FridgeScreen /></Protected>} />
-      <Route path="/fridge/:userId" element={<Protected><OtherFridge /></Protected>} />
+      <Route path="/fridge/:fridgeId" element={<Protected><OtherFridge /></Protected>} />
       <Route path="/map" element={<Protected><MapScreen /></Protected>} />
       <Route path="/add" element={<Protected><AddMagnet /></Protected>} />
       <Route path="/settings" element={<Protected><SettingsScreen /></Protected>} />
