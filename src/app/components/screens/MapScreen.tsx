@@ -133,6 +133,7 @@ export function MapScreen() {
         initialZoom={1.2}
         initialCenter={profile ? { lat: profile.homeLat, lng: profile.homeLng } : { lat: 20, lng: 10 }}
         onBackgroundClick={() => {
+          console.log("[Map] Background clicked");
           setExpanded(null);
           setSelected(null);
         }}
@@ -140,11 +141,17 @@ export function MapScreen() {
 
       <AnimatePresence>
         {selected && (
-          <PinPreviewCard
-            key={selected.profile.id}
-            fridge={selected}
-            onClose={() => setSelected(null)}
-          />
+          <>
+            {console.log(`[MapScreen] Rendering PinPreviewCard for ${selected.profile.name}`)}
+            <PinPreviewCard
+              key={selected.profile.id}
+              fridge={selected}
+              onClose={() => {
+                console.log("[MapScreen] Closing PinPreviewCard");
+                setSelected(null);
+              }}
+            />
+          </>
         )}
       </AnimatePresence>
 

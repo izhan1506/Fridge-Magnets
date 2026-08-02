@@ -57,7 +57,8 @@
       "Read(//Users/getlicensed/Downloads/**)",
       "Bash(curl -s http://localhost:5176/)",
       "Bash(killall node *)",
-      "Bash(curl -s http://localhost:5174/)"
+      "Bash(curl -s http://localhost:5174/)",
+      "Bash(git commit -m 'Debug: add MapScreen logging to trace PinPreviewCard rendering *)"
     ]
   }
 }
