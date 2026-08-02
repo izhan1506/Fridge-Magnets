@@ -106,12 +106,14 @@ export function FridgeView({
 
   return (
     <>
-      <div className="flex items-center justify-between px-6 pt-1">
-        <p className="font-fridge text-[1.4rem] text-foreground/90">
-          {readOnly ? `${profile.name}'s Fridge` : "Your Magnets"}
-        </p>
-        {headerAction}
-      </div>
+      {!readOnly && (
+        <div className="flex items-center justify-between px-6 pt-1">
+          <p className="font-fridge text-[1.4rem] text-foreground/90">
+            Your Magnets
+          </p>
+          {headerAction}
+        </div>
+      )}
 
       <FridgeAppliance
         overlay={
