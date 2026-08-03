@@ -15,7 +15,7 @@ export function FridgeScreen() {
 
   return (
     <div className="relative flex h-full flex-col">
-      <div className="flex flex-1 flex-col bg-background pt-11">
+      <div className="flex flex-1 flex-col bg-background">
         <FridgeView
           fridge={{ profile, magnets }}
           headerAction={
