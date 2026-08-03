@@ -23,7 +23,7 @@ const CANVAS_H = ILLO_H * (DOOR_ZONE.height / 100);
  * after its ±6° rotation (~1.1× the side), used to keep it inside the canvas. */
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 const tileSize = (m: Magnet) => MAGNET_SIZE * (m.scale ?? 1);
-const halfBox = (size: number) => (size * 1.1) / 2; // half of the rotated bounding box
+const halfBox = (size: number) => (size * 1.05) / 2; // half of the rotated bounding box
 
 /** Deterministic PRNG (mulberry32) so an unplaced magnet set lands the same way
  *  across renders/sessions (until placement is persisted). */
@@ -107,7 +107,7 @@ export function FridgeView({
   return (
     <>
       {!readOnly && (
-        <div className="flex items-center justify-between px-6 pt-1">
+        <div className="absolute inset-x-0 top-0 pt-6 pb-6 mb-6 z-30 flex items-center justify-between px-6 gap-4">
           <p className="font-fridge text-[1.4rem] text-foreground/90">
             Your Magnets
           </p>
@@ -115,6 +115,7 @@ export function FridgeView({
         </div>
       )}
 
+      <div className="mt-8">
       <FridgeAppliance
         overlay={
           empty ? (
@@ -144,6 +145,7 @@ export function FridgeView({
             );
           })}
       </FridgeAppliance>
+      </div>
 
       {storyIndex !== null && (
         <StoryViewer
@@ -215,15 +217,15 @@ function DraggableMagnet({
 
     const onMove = (e: PointerEvent) => {
       const { px, py, bx, by } = start.current;
-      x.set(clamp(bx + (e.clientX - px), 0, CANVAS_W - size));
-      y.set(clamp(by + (e.clientY - py), 0, CANVAS_H - size));
+      x.set(bx + (e.clientX - px));
+      y.set(by + (e.clientY - py));
     };
     const onUp = () => {
       cleanup.current?.();
       dragging.current = false;
       setLifted(false);
-      const cx = clamp(x.get() + tileHalf, rotHalf, CANVAS_W - rotHalf);
-      const cy = clamp(y.get() + tileHalf, rotHalf, CANVAS_H - rotHalf);
+      const cx = clamp(x.get() + tileHalf, 0, CANVAS_W);
+      const cy = clamp(y.get() + tileHalf, 0, CANVAS_H);
       x.set(cx - tileHalf);
       y.set(cy - tileHalf);
       onMoved(cx / CANVAS_W, cy / CANVAS_H);

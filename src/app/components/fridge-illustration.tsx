@@ -1,13 +1,13 @@
 const VB_W = 400;
-const VB_H = 780;
+const VB_H = 950;
 const BODY_X1 = 20;
 const BODY_X2 = 380;
 const BODY_Y1 = 14;
-const BODY_Y2 = 762;
+const BODY_Y2 = 931;
 const BODY_R = 46; // moderate top rounding — a subtle bevel, not a full dome
 const BODY_PATH = `M${BODY_X1},${BODY_Y2} L${BODY_X1},${BODY_Y1 + BODY_R} Q${BODY_X1},${BODY_Y1} ${BODY_X1 + BODY_R},${BODY_Y1} L${BODY_X2 - BODY_R},${BODY_Y1} Q${BODY_X2},${BODY_Y1} ${BODY_X2},${BODY_Y1 + BODY_R} L${BODY_X2},${BODY_Y2} Z`;
 const CAP_Y2 = 34; // top trim band
-const BASE_SEAM_Y = 600; // seam toward the base of the unit
+const BASE_SEAM_Y = 731; // seam toward the base of the unit
 
 /**
  * The app's one fridge — everyone gets this same illustration, no skin

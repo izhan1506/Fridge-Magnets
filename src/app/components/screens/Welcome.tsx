@@ -39,11 +39,10 @@ export function Welcome() {
         className="relative flex h-full flex-col justify-end px-6 pb-10"
       >
         <h1 className="font-fridge text-[2.7rem] leading-[0.98] tracking-tight">
-          Every trip becomes
+          Turn your travels
           <br />
-          a <span className="text-primary">magnet.</span>
+          into <span className="text-primary">tales.</span>
         </h1>
-
         <p className="mt-3.5 max-w-[19rem] text-[15px] leading-relaxed text-white/65">
           Snap a photo from any trip, pin it to your fridge, and find fellow travelers on the map.
         </p>

@@ -30,7 +30,6 @@ export function PhoneFrame({ children }: { children: ReactNode }) {
         style={{ width: DEVICE_W, height: DEVICE_H }}
       >
         {children}
-        <StatusBar />
       </div>
 
       {/* Mobile: Full screen, no frame, no rounded corners. Uses dvh for mobile browser chrome. */}

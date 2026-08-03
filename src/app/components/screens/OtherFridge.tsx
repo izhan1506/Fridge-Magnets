@@ -36,13 +36,13 @@ export function OtherFridge() {
 
   return (
     <div className="relative flex h-full flex-col">
-      <div className="flex items-center gap-3 px-4 pb-3 pt-11">
+      <div className="absolute inset-x-0 top-0 pt-6 pb-6 mb-6 z-30 flex items-center gap-3 px-4">
         <button onClick={() => nav(-1)} className="rounded-xl border border-white/30 bg-white/15 p-2 backdrop-blur-[7px] transition hover:bg-white/25">
           <ArrowLeft size={22} />
         </button>
         <h2 className="font-fridge text-[1.4rem]">{fridge ? `${fridge.profile.name}'s fridge` : "Fridge"}</h2>
       </div>
-      <div className="flex flex-1 flex-col bg-background">
+      <div className="flex flex-1 flex-col bg-background mt-10">
         {loading ? (
           <div className="flex flex-1 items-center justify-center">
             <Loader2 className="animate-spin text-primary" size={32} />
