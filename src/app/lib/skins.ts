@@ -21,4 +21,4 @@ export function randomMagnetColor(): MagnetColor {
  * (y≈34) down to the base seam (y=600) — staying clear only of the handle
  * groove on the left edge (x≈56).
  */
-export const DOOR_ZONE = { left: 15, top: 5, width: 65, height: 71 };
+export const DOOR_ZONE = { left: 15, top: 5, width: 65, height: 63 };
