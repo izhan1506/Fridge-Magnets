@@ -23,7 +23,7 @@ function StatusBar() {
 /** Phone-first shell. On desktop: fixed 402×874 frame with shadow. On mobile: full screen, no frame. */
 export function PhoneFrame({ children }: { children: ReactNode }) {
   return (
-    <div className="min-h-screen w-full overflow-y-auto bg-[#0b0b0b] flex items-center justify-center py-6">
+    <div className="min-h-screen w-full overflow-y-auto md:bg-[#0b0b0b] flex items-center justify-center md:py-6">
       {/* Desktop: Fixed phone frame (mobile preview) */}
       <div
         className="hidden md:block relative bg-background shadow-xl overflow-hidden rounded-[2.25rem]"
