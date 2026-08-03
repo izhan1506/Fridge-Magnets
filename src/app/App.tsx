@@ -17,7 +17,7 @@ import { DesignSystem } from "./components/screens/DesignSystem";
 function Splash() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center md:min-h-[900px]">
-      <span className="font-fridge text-3xl text-white">taking you to fridge</span>
+      <span className="text-base font-normal text-white">taking you to fridge</span>
       <Loader2 className="mt-4 animate-spin text-muted-foreground" size={24} />
     </div>
   );
