@@ -251,3 +251,13 @@ export function reverseGeocode(lat: number, lng: number): { city: string; countr
   });
   return closest;
 }
+
+export function searchCities(query: string): City[] {
+  if (!query.trim()) return [];
+  const q = query.toLowerCase();
+  return CITIES.filter(
+    (c) =>
+      c.city.toLowerCase().includes(q) ||
+      c.country.toLowerCase().includes(q)
+  ).slice(0, 20);
+}
