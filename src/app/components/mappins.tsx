@@ -64,10 +64,16 @@ export function HomePin({ fridge, onClick }: { fridge: PublicFridge; onClick: ()
 export function ClusterBubble({ count, onClick }: { count: number; onClick: () => void }) {
   return (
     <motion.button
-      onClick={onClick}
+      onClick={(e) => {
+        console.log(`[ClusterBubble] Clicked with ${count} fridges`);
+        e.preventDefault();
+        e.stopPropagation();
+        onClick();
+      }}
       whileHover={{ scale: 1.08, y: -2 }}
       whileTap={{ scale: 0.94 }}
-      className="relative flex flex-col items-center"
+      className="relative flex flex-col items-center pointer-events-auto cursor-pointer"
+      type="button"
     >
       <span className="flex h-16 w-16 flex-col items-center justify-center rounded-[20px] border-[3px] border-white bg-primary text-primary-foreground shadow-[0_10px_20px_rgba(0,0,0,0.28)]">
         <span className="leading-none">{count}</span>
@@ -108,10 +114,14 @@ export function ClusterListSheet({
           return (
             <motion.button
               key={fridge.profile.id}
-              onClick={() => onSelectFridge(fridge)}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onSelectFridge(fridge);
+              }}
               whileHover={{ scale: 1.02, x: 4 }}
               whileTap={{ scale: 0.98 }}
-              className="w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-muted/50 transition text-left"
+              className="w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-muted/50 transition text-left pointer-events-auto cursor-pointer"
             >
               <span
                 className="h-14 w-14 shrink-0 overflow-hidden rounded-xl border-2 border-white/30 shadow-md"
