@@ -25,10 +25,6 @@ export function FridgeIllustration({ className = "" }: { className?: string }) {
           <stop offset="55%" stopColor="#E2E0DA" />
           <stop offset="100%" stopColor="#C9C7C0" />
         </linearGradient>
-        <linearGradient id="fridge-cap-grad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#F8F7F4" />
-          <stop offset="100%" stopColor="#DEDCD6" />
-        </linearGradient>
         <radialGradient id="fridge-shine" cx="20%" cy="4%" r="46%">
           <stop offset="0%" stopColor="#ffffff" stopOpacity="0.5" />
           <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
@@ -45,15 +41,6 @@ export function FridgeIllustration({ className = "" }: { className?: string }) {
       <path d={BODY_PATH} fill="url(#fridge-body-grad)" opacity="0.9" strokeLinecap="round" strokeLinejoin="round" />
 
       <g clipPath="url(#fridge-clip)">
-        {/* Top cap - solid color */}
-        <rect x={BODY_X1} y={BODY_Y1} width={BODY_X2 - BODY_X1} height={CAP_Y2 - BODY_Y1} fill="#EAE8E0" />
-        
-        {/* Cap gradient overlay */}
-        <rect x={BODY_X1} y={BODY_Y1} width={BODY_X2 - BODY_X1} height={CAP_Y2 - BODY_Y1} fill="url(#fridge-cap-grad)" opacity="0.8" />
-        
-        {/* Cap seam */}
-        <rect x={BODY_X1} y={CAP_Y2} width={BODY_X2 - BODY_X1} height="2" fill="#B9B7B0" />
-        
         {/* Shine effect */}
         <rect x={BODY_X1} y={BODY_Y1} width={BODY_X2 - BODY_X1} height={BODY_Y2 - BODY_Y1} fill="url(#fridge-shine)" opacity="0.7" />
         
