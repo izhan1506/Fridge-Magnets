@@ -115,7 +115,7 @@ export function FridgeView({
         </div>
       )}
 
-      <div className="flex-1 flex flex-col min-h-0 py-4">
+      <div className="flex-1 flex flex-col min-h-0">
       <FridgeAppliance
         overlay={
           empty ? (
