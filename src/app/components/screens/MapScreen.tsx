@@ -6,7 +6,7 @@ import { getPublicFridges } from "../../lib/store";
 import { haversine } from "../../lib/geo";
 import type { PublicFridge } from "../../lib/types";
 import { WorldMap, type MapMarker } from "../worldmap";
-import { HomePin, ClusterBubble, PinPreviewCard } from "../mappins";
+import { HomePin, ClusterBubble, PinPreviewCard, ClusterListSheet } from "../mappins";
 import { BottomNavBar } from "../glass-nav";
 
 interface Cluster {
@@ -44,7 +44,8 @@ export function MapScreen() {
   const { profile, magnets } = useSession();
   const [tab, setTab] = useState<"fridge" | "map">("map");
   const [fridges, setFridges] = useState<PublicFridge[]>([]);
-  const [expanded, setExpanded] = useState<string | null>(null);
+  const [expandedClusterId, setExpandedClusterId] = useState<string | null>(null);
+  const [selectedCluster, setSelectedCluster] = useState<PublicFridge[] | null>(null);
   const [selected, setSelected] = useState<PublicFridge | null>(null);
 
   useEffect(() => {
@@ -82,7 +83,7 @@ export function MapScreen() {
   const markers: MapMarker[] = useMemo(() => {
     const out: MapMarker[] = [];
     for (const c of clusters) {
-      if (c.fridges.length > 1 && expanded !== c.id) {
+      if (c.fridges.length > 1 && expandedClusterId !== c.id) {
         out.push({
           id: `c-${c.id}`,
           lat: c.lat,
@@ -92,7 +93,8 @@ export function MapScreen() {
               count={c.fridges.length}
               onClick={() => {
                 console.log(`[Map] Cluster clicked: ${c.id}`);
-                setExpanded(c.id);
+                setExpandedClusterId(c.id);
+                setSelectedCluster(c.fridges);
               }}
             />
           ),
@@ -117,7 +119,7 @@ export function MapScreen() {
       }
     }
     return out;
-  }, [clusters, expanded]);
+  }, [clusters, expandedClusterId]);
 
   const visited = useMemo(
     () => magnets.map((m) => ({ lat: m.lat, lng: m.lng })),
@@ -134,12 +136,28 @@ export function MapScreen() {
         initialCenter={profile ? { lat: profile.homeLat, lng: profile.homeLng } : { lat: 20, lng: 10 }}
         onBackgroundClick={() => {
           console.log("[Map] Background clicked");
-          setExpanded(null);
+          setExpandedClusterId(null);
+          setSelectedCluster(null);
           setSelected(null);
         }}
       />
 
       <AnimatePresence>
+        {selectedCluster && selectedCluster.length > 1 && (
+          <ClusterListSheet
+            key="cluster-list"
+            fridges={selectedCluster}
+            onSelectFridge={(fridge) => {
+              console.log(`[Map] Selected fridge from cluster: ${fridge.profile.name}`);
+              setSelected(fridge);
+            }}
+            onClose={() => {
+              console.log("[Map] Cluster list closed");
+              setSelectedCluster(null);
+              setExpandedClusterId(null);
+            }}
+          />
+        )}
         {selected && (
           <>
             {console.log(`[MapScreen] Rendering PinPreviewCard for ${selected.profile.name}`)}

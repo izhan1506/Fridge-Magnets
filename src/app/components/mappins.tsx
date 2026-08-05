@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router";
 import { motion } from "motion/react";
+import { X } from "lucide-react";
 import type { Magnet, PublicFridge } from "../lib/types";
 import { MAGNET_COLORS } from "../lib/skins";
 import { generateFridgeId } from "../lib/fridge-id";
@@ -74,6 +75,66 @@ export function ClusterBubble({ count, onClick }: { count: number; onClick: () =
       </span>
       <PinTail color="var(--primary)" />
     </motion.button>
+  );
+}
+
+/** List of fridges in a cluster shown as scrollable sheet. */
+export function ClusterListSheet({
+  fridges,
+  onSelectFridge,
+  onClose,
+}: {
+  fridges: PublicFridge[];
+  onSelectFridge: (fridge: PublicFridge) => void;
+  onClose: () => void;
+}) {
+  return (
+    <motion.div
+      initial={{ y: 24, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      exit={{ y: 24, opacity: 0 }}
+      className="absolute inset-x-4 bottom-24 z-20 rounded-3xl bg-card p-4 shadow-2xl max-h-96 flex flex-col"
+    >
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="font-fridge">{fridges.length} fridges</h3>
+        <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
+          <X size={20} />
+        </button>
+      </div>
+
+      <div className="overflow-y-auto flex-1 space-y-2 pr-2">
+        {fridges.map((fridge) => {
+          const top = featuredMagnet(fridge);
+          return (
+            <motion.button
+              key={fridge.profile.id}
+              onClick={() => onSelectFridge(fridge)}
+              whileHover={{ scale: 1.02, x: 4 }}
+              whileTap={{ scale: 0.98 }}
+              className="w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-muted/50 transition text-left"
+            >
+              <span
+                className="h-14 w-14 shrink-0 overflow-hidden rounded-xl border-2 border-white/30 shadow-md"
+                style={{ backgroundColor: top ? MAGNET_COLORS[top.color] : "var(--magnet-blue)" }}
+              >
+                {top?.photoUrl && (
+                  <ImageWithFallback
+                    src={top.photoUrl}
+                    alt={`${fridge.profile.name}'s fridge`}
+                    className="h-full w-full object-cover"
+                  />
+                )}
+              </span>
+              <div className="flex-1 min-w-0">
+                <p className="font-medium truncate">{fridge.profile.name}'s fridge</p>
+                <p className="text-sm text-muted-foreground truncate">{fridge.profile.homeLabel}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{fridge.magnets.length} magnets</p>
+              </div>
+            </motion.button>
+          );
+        })}
+      </div>
+    </motion.div>
   );
 }
 
