@@ -14,8 +14,8 @@ export function FridgeScreen() {
   if (!profile) return null;
 
   return (
-    <div className="relative flex h-full flex-col">
-      <div className="flex flex-1 flex-col bg-background pt-11">
+    <div className="relative flex h-full w-full flex-col bg-background">
+      <div className="flex flex-1 flex-col overflow-hidden">
         <FridgeView
           fridge={{ profile, magnets }}
           headerAction={

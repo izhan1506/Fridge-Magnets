@@ -12,7 +12,7 @@ import { ImageWithFallback } from "./figma/ImageWithFallback";
  */
 export function FridgeAppliance({ children, overlay }: { children: ReactNode; overlay?: ReactNode }) {
   return (
-    <div className="flex flex-1 items-end justify-center overflow-y-auto px-2">
+    <div className="flex flex-1 items-center justify-center overflow-visible px-2">
       <div className="relative w-full max-w-[440px]">
         <FridgeIllustration className="pointer-events-none w-full select-none" />
         {/* magnet placement canvas (percentages of the image box) — a bounded box

@@ -105,9 +105,9 @@ export function FridgeView({
   }, [magnets, resolved, readOnly, updateMagnet]);
 
   return (
-    <>
+    <div className="relative w-full h-full flex flex-col">
       {!readOnly && (
-        <div className="absolute inset-x-0 top-0 pt-6 pb-6 mb-6 z-30 flex items-center justify-between px-6 gap-4">
+        <div className="pt-6 pb-6 z-30 flex items-center justify-between px-6 gap-4 shrink-0">
           <p className="font-fridge text-[1.4rem] text-foreground/90">
             Your Magnets
           </p>
@@ -115,7 +115,7 @@ export function FridgeView({
         </div>
       )}
 
-      <div className="mt-8">
+      <div className="flex-1 flex flex-col min-h-0 py-4">
       <FridgeAppliance
         overlay={
           empty ? (
@@ -155,7 +155,7 @@ export function FridgeView({
           onClose={() => setStoryIndex(null)}
         />
       )}
-    </>
+    </div>
   );
 }
 
