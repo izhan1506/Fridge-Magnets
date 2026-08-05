@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router";
 import { Loader2 } from "lucide-react";
 import { Toaster } from "sonner";
+import { AnimatePresence, motion } from "motion/react";
 import { SessionProvider, useSession } from "./lib/session";
 import { PhoneFrame } from "./components/layout";
 import { Welcome } from "./components/screens/Welcome";
@@ -23,6 +24,21 @@ function Splash() {
   );
 }
 
+/** Wraps screen content with fade/slide entrance animation. */
+function ScreenAnimator({ children }: { children: React.ReactNode }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -8 }}
+      transition={{ duration: 0.3, ease: "easeInOut" }}
+      className="h-full"
+    >
+      {children}
+    </motion.div>
+  );
+}
+
 /** Requires an account; funnels unfinished users through onboarding. */
 function Protected({ children }: { children: React.ReactNode }) {
   const { profile, loading, onboarded } = useSession();
@@ -33,12 +49,12 @@ function Protected({ children }: { children: React.ReactNode }) {
 
   // If already on onboarding path, let them proceed (don't redirect back)
   if (location.pathname.startsWith("/onboarding")) {
-    return <>{children}</>;
+    return <ScreenAnimator>{children}</ScreenAnimator>;
   }
 
   // If onboarding is complete, let them access fridge/map/etc
   if (onboarded) {
-    return <>{children}</>;
+    return <ScreenAnimator>{children}</ScreenAnimator>;
   }
 
   // Only redirect to onboarding if NOT onboarded AND NOT already there
@@ -50,24 +66,28 @@ function PublicOnly({ children }: { children: React.ReactNode }) {
   const { profile, loading, onboarded } = useSession();
   if (loading) return <Splash />;
   if (profile) return <Navigate to={onboarded ? "/fridge" : "/onboarding/home"} replace />;
-  return <>{children}</>;
+  return <ScreenAnimator>{children}</ScreenAnimator>;
 }
 
 function Router() {
+  const location = useLocation();
+
   return (
-    <Routes>
-      <Route path="/designsystem" element={<DesignSystem />} />
-      <Route path="/welcome" element={<PublicOnly><Welcome /></PublicOnly>} />
-      <Route path="/auth" element={<PublicOnly><Auth /></PublicOnly>} />
-      <Route path="/onboarding/home" element={<Protected><SetHomeBase /></Protected>} />
-      <Route path="/fridge" element={<Protected><FridgeScreen /></Protected>} />
-      <Route path="/fridge/:fridgeId" element={<Protected><OtherFridge /></Protected>} />
-      <Route path="/map" element={<Protected><MapScreen /></Protected>} />
-      <Route path="/add" element={<Protected><AddMagnet /></Protected>} />
-      <Route path="/settings" element={<Protected><SettingsScreen /></Protected>} />
-      <Route path="/settings/magnets" element={<Protected><MagnetSettings /></Protected>} />
-      <Route path="*" element={<Navigate to="/fridge" replace />} />
-    </Routes>
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        <Route path="/designsystem" element={<DesignSystem />} />
+        <Route path="/welcome" element={<PublicOnly><Welcome /></PublicOnly>} />
+        <Route path="/auth" element={<PublicOnly><Auth /></PublicOnly>} />
+        <Route path="/onboarding/home" element={<Protected><SetHomeBase /></Protected>} />
+        <Route path="/fridge" element={<Protected><FridgeScreen /></Protected>} />
+        <Route path="/fridge/:fridgeId" element={<Protected><OtherFridge /></Protected>} />
+        <Route path="/map" element={<Protected><MapScreen /></Protected>} />
+        <Route path="/add" element={<Protected><AddMagnet /></Protected>} />
+        <Route path="/settings" element={<Protected><SettingsScreen /></Protected>} />
+        <Route path="/settings/magnets" element={<Protected><MagnetSettings /></Protected>} />
+        <Route path="*" element={<Navigate to="/fridge" replace />} />
+      </Routes>
+    </AnimatePresence>
   );
 }
 
