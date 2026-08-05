@@ -14,7 +14,7 @@ import { StoryViewer } from "../story-viewer";
  * is deterministic and matches the on-screen box exactly. */
 const MAGNET_SIZE = 120; // base tile side, px (a magnet's scale multiplies this)
 const APPLIANCE_W = Math.min(DEVICE_W - 16, 440);
-const ILLO_H = (APPLIANCE_W * 780) / 400; // illustration viewBox is 400×780
+const ILLO_H = (APPLIANCE_W * 950) / 400; // illustration viewBox is 400×950
 const CANVAS_W = APPLIANCE_W * (DOOR_ZONE.width / 100);
 const CANVAS_H = ILLO_H * (DOOR_ZONE.height / 100);
 
