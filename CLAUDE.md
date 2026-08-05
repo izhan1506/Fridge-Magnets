@@ -1,6 +1,51 @@
 # Fridge Magnets - Development Notes
 
-## Latest Session Summary (2026-08-05)
+## Latest Session Summary (2026-08-05, later session)
+
+### Focus: Android / wide-screen fridge rendering
+
+**Reported problem:** On some Android devices and wider mobile viewports, the fridge
+body rendered black (invisible) — only the handle groove and magnets were visible.
+A white bar also appeared above the fridge.
+
+### Changes Made (commits 2b49a3c → 743aa79)
+
+| Commit | Change |
+|---|---|
+| `2b49a3c` | Solid-color fallbacks under SVG gradients; FridgeView converted to a real flex column; FridgeAppliance `items-end`→`items-center`, `overflow-y-auto`→`overflow-visible`; `strokeLinecap/Linejoin="round"` on body paths |
+| `9bf5e2e` | `vercel.json` cache headers — `index.html` set to `max-age=0, must-revalidate` so users stop getting a stale bundle |
+| `7ddd0f3` | Removed `py-4` that introduced a white gap |
+| `743aa79` | Removed the fridge's top trim cap (`fridge-cap-grad`, cap rect, cap seam) entirely |
+
+### ⚠️ IMPORTANT — These fixes were NOT verified on a real Android device
+
+This is the key thing to know starting the next session. The root cause of the
+black fridge was **never confirmed** — "Android doesn't render SVG gradients" was a
+hypothesis, not a diagnosis, and it is probably wrong (Chrome on Android has
+supported SVG gradients for years). The changes above are plausible but speculative:
+
+- No Android device or emulator was used at any point.
+- No DevTools inspection of the actual failing element was done.
+- The user reported the white bar *persisted* after the first "fix", which suggests
+  the earlier diagnosis was off.
+- The top trim cap was deleted as a visual fix — this is a **design change**, not a
+  bug fix. If the cap was wanted, restore it from `743aa79^`.
+
+**Do this before trusting any of it:** open the live app on a real Android phone
+(or Chrome DevTools remote debugging), inspect the fridge `<svg>`, and confirm
+whether the body path is present-but-unpainted, or missing/zero-height. That
+distinguishes a paint bug from a layout bug — the two need opposite fixes.
+
+### Alternative hypotheses not yet ruled out
+- `drop-shadow()` filter on the SVG failing/compositing black on some GPUs
+- `aspectRatio` inline style unsupported → SVG collapses to zero height
+- The parent flex chain giving the SVG a 0px box, so only absolutely-positioned
+  magnets (which use fixed px math) still paint
+- A stale service worker / PWA cache serving old assets regardless of headers
+
+---
+
+## Session Summary (2026-08-05, earlier session)
 
 ### Major Accomplishments
 
