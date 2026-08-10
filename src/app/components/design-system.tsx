@@ -257,7 +257,9 @@ interface SearchBarProps extends InputHTMLAttributes<HTMLInputElement> {}
 
 export function SearchBar({ className = "", ...props }: SearchBarProps) {
   return (
-    <div className={`flex items-center gap-2 h-12 rounded-full bg-card border border-border px-4 shadow-sm ${className}`}>
+    // rounded-2xl to match TextField — these sit next to each other in forms,
+    // and a pill-shaped search against squircle inputs read as inconsistent.
+    <div className={`flex items-center gap-2 h-12 rounded-2xl bg-card border border-border px-4 shadow-sm ${className}`}>
       <Search size={20} className="text-muted-foreground shrink-0" />
       <input
         className="w-full bg-transparent outline-none placeholder:text-muted-foreground"

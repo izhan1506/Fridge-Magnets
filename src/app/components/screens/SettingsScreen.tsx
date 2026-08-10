@@ -30,7 +30,7 @@ export function SettingsScreen() {
       <div className="mt-6 overflow-hidden rounded-3xl bg-card border border-border">
         <Row icon={<MapPin size={20} />} label="Home base" value={profile.homeLabel || "Not set"} onClick={() => nav("/onboarding/home")} />
         <Divider />
-        <Row icon={<Link size={20} />} label="Magnets" value="Add stories" onClick={() => nav("/settings/magnets")} />
+        <Row icon={<Link size={20} />} label="Magnets" value="Edit magnets" onClick={() => nav("/settings/magnets")} />
         <Divider />
         <div className="flex items-center gap-3 px-4 py-4">
           <span className="text-muted-foreground"><Globe size={20} /></span>
