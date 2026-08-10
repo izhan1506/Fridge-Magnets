@@ -9,6 +9,28 @@ const BODY_PATH = `M${BODY_X1},${BODY_Y2} L${BODY_X1},${BODY_Y1 + BODY_R} Q${BOD
 const CAP_Y2 = 34;
 const BASE_SEAM_Y = 731;
 
+/**
+ * X of the body's left edge at a given y, following the top corner curve.
+ * The corner is a quadratic Bézier P0=(X1,Y1+R) P1=(X1,Y1) P2=(X1+R,Y1), which
+ * simplifies to y = Y1 + R(1−t)² and x = X1 + Rt² — so the edge at any y is
+ * exact, no sampling needed. Below the corner it's just X1.
+ */
+function bodyLeftAtY(y: number): number {
+  if (y >= BODY_Y1 + BODY_R) return BODY_X1;
+  if (y <= BODY_Y1) return BODY_X1 + BODY_R;
+  const t = 1 - Math.sqrt((y - BODY_Y1) / BODY_R);
+  return BODY_X1 + BODY_R * t * t;
+}
+
+/* Top trim seam (the freezer/door split). The viewBox is 400 wide and renders
+ * ~396 CSS px on a phone, so a viewBox unit is ≈1px — this sits 12px above the
+ * point the corner radius ends. That's mid-curve, where the body is narrower
+ * than its full width, so the seam is inset to match the silhouette exactly
+ * instead of relying on the clip to trim the overhang. */
+const TOP_SEAM_Y = BODY_Y1 + BODY_R - 12;
+const TOP_SEAM_X = bodyLeftAtY(TOP_SEAM_Y);
+const TOP_SEAM_W = BODY_X2 - BODY_X1 - 2 * (TOP_SEAM_X - BODY_X1);
+
 export function FridgeIllustration({ className = "" }: { className?: string }) {
   return (
     <svg
@@ -44,6 +66,9 @@ export function FridgeIllustration({ className = "" }: { className?: string }) {
         {/* Shine effect */}
         <rect x={BODY_X1} y={BODY_Y1} width={BODY_X2 - BODY_X1} height={BODY_Y2 - BODY_Y1} fill="url(#fridge-shine)" opacity="0.7" />
         
+        {/* Top trim seam — inset to the body's true width at this height */}
+        <rect x={TOP_SEAM_X} y={TOP_SEAM_Y} width={TOP_SEAM_W} height="2" fill="#B9B7B0" />
+
         {/* Base seam */}
         <rect x={BODY_X1} y={BASE_SEAM_Y} width={BODY_X2 - BODY_X1} height="2" fill="#B9B7B0" />
 

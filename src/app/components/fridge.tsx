@@ -12,7 +12,10 @@ import { ImageWithFallback } from "./figma/ImageWithFallback";
  */
 export function FridgeAppliance({ children, overlay }: { children: ReactNode; overlay?: ReactNode }) {
   return (
-    <div className="flex flex-1 items-center justify-center overflow-visible px-2">
+    /* items-start, not items-center: the illustration is taller than this box on
+       most phones, and centering made it overflow *upwards* too — bleeding out
+       from under the screen header. Top-aligned it only ever runs off the bottom. */
+    <div className="flex min-h-0 flex-1 items-start justify-center overflow-visible px-2">
       <div className="relative w-full max-w-[440px]">
         <FridgeIllustration className="pointer-events-none w-full select-none" />
         {/* magnet placement canvas (percentages of the image box) — a bounded box
