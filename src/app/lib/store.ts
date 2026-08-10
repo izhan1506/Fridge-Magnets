@@ -20,6 +20,18 @@ function profileFromRow(row: any): Profile {
   };
 }
 
+/**
+ * Every magnet column EXCEPT `trip_photo_url`.
+ *
+ * Trip photos are stored as base64 data URLs inline on the row — often several
+ * MB each — and are only ever rendered by the story viewer. `select("*")` on a
+ * list query therefore downloads every trip photo of every user just to draw a
+ * name and a magnet count, which is the single biggest cost of opening the map.
+ * Use this for lists; fetch the full row only when the viewer needs it.
+ */
+const MAGNET_LIST_COLUMNS =
+  "id,user_id,city,country,lat,lng,caption,instagram_url,photo_url,color,verified,rotation,scale,pos_x,pos_y,created_at";
+
 function magnetFromRow(row: any): Magnet {
   return {
     id: row.id,
@@ -246,7 +258,7 @@ export async function getPublicFridges(
   if (profileIds.length > 0) {
     const { data: magData, error: magError } = await supabase
       .from("magnets")
-      .select("*")
+      .select(MAGNET_LIST_COLUMNS)
       .in("user_id", profileIds)
       .order("created_at", { ascending: false });
 
