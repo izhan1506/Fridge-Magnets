@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router";
 import { Loader2 } from "lucide-react";
 import { Toaster } from "sonner";
@@ -9,11 +10,26 @@ import { Auth } from "./components/screens/Auth";
 import { SetHomeBase } from "./components/screens/SetHomeBase";
 import { FridgeScreen } from "./components/screens/FridgeScreen";
 import { OtherFridge } from "./components/screens/OtherFridge";
-import { MapScreen } from "./components/screens/MapScreen";
-import { AddMagnet } from "./components/screens/AddMagnet";
 import { SettingsScreen } from "./components/screens/SettingsScreen";
 import { MagnetSettings } from "./components/screens/MagnetSettings";
-import { DesignSystem } from "./components/screens/DesignSystem";
+
+/* Split out of the boot bundle — these pull in the app's two heaviest
+ * dependencies and most users reach the fridge first:
+ *   MapScreen   → maplibre-gl, ~1MB
+ *   AddMagnet   → @imgly/background-removal, a ~24MB ONNX WASM binary
+ * Loading them on navigation instead of at startup keeps first paint small. */
+const MapScreen = lazy(() =>
+  import("./components/screens/MapScreen").then((m) => ({ default: m.MapScreen })),
+);
+const AddMagnet = lazy(() =>
+  import("./components/screens/AddMagnet").then((m) => ({ default: m.AddMagnet })),
+);
+const DesignSystem = lazy(() =>
+  import("./components/screens/DesignSystem").then((m) => ({ default: m.DesignSystem })),
+);
+const CaseStudy = lazy(() =>
+  import("./components/screens/CaseStudy").then((m) => ({ default: m.CaseStudy })),
+);
 
 function Splash() {
   return (
@@ -74,8 +90,16 @@ function Router() {
 
   return (
     <AnimatePresence mode="wait">
+      {/* Suspense boundary for the lazily-loaded screens above. */}
+      <Suspense fallback={<Splash />}>
       <Routes location={location} key={location.pathname}>
         <Route path="/designsystem" element={<DesignSystem />} />
+        {/* Public — deliberately NOT wrapped in Protected/PublicOnly so the
+            case study is shareable without an account. The hyphenated spelling
+            is aliased because the catch-all below would otherwise bounce it
+            into the signed-out redirect. */}
+        <Route path="/casestudy" element={<CaseStudy />} />
+        <Route path="/case-study" element={<CaseStudy />} />
         <Route path="/welcome" element={<PublicOnly><Welcome /></PublicOnly>} />
         <Route path="/auth" element={<PublicOnly><Auth /></PublicOnly>} />
         <Route path="/onboarding/home" element={<Protected><SetHomeBase /></Protected>} />
@@ -87,15 +111,18 @@ function Router() {
         <Route path="/settings/magnets" element={<Protected><MagnetSettings /></Protected>} />
         <Route path="*" element={<Navigate to="/fridge" replace />} />
       </Routes>
+      </Suspense>
     </AnimatePresence>
   );
 }
 
 function AppLayout() {
   const location = useLocation();
-  const isDesignSystem = location.pathname === "/designsystem";
+  /* Wide editorial/reference pages render full-bleed; everything else is the
+     phone app and stays inside the 402pt frame. */
+  const isFullWidth = ["/designsystem", "/casestudy"].includes(location.pathname);
 
-  return isDesignSystem ? (
+  return isFullWidth ? (
     <>
       <Router />
       <Toaster
