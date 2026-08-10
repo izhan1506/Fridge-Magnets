@@ -4,6 +4,7 @@ import { ArrowLeft, Link, MoreVertical, Trash2, ImageUp, X } from "lucide-react"
 import { toast } from "../../lib/toast";
 import { useSession } from "../../lib/session";
 import { MAGNET_COLORS } from "../../lib/skins";
+import { fileToOptimizedDataUrl, TRIP_PHOTO_OPTIONS } from "../../lib/image";
 import type { Magnet } from "../../lib/types";
 import { M3Button, TextField } from "../chrome";
 import { BottomSheet } from "../layout";
@@ -177,12 +178,9 @@ function EditMagnetForm({ magnet, onDone }: { magnet: Magnet; onDone: () => void
             onChange={async (e) => {
               const file = e.target.files?.[0];
               if (file) {
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                  const dataUrl = event.target?.result as string;
-                  setPreview(dataUrl);
-                };
-                reader.readAsDataURL(file);
+                // Same optimization as AddMagnet — this is persisted inline on
+                // the magnet row, so it goes in downscaled and WebP-encoded.
+                setPreview(await fileToOptimizedDataUrl(file, TRIP_PHOTO_OPTIONS));
               }
             }}
           />

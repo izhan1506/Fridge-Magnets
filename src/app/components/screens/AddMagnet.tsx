@@ -6,6 +6,7 @@ import { M3Button, TextField } from "../chrome";
 import { useSession } from "../../lib/session";
 import { reverseGeocode } from "../../lib/geo";
 import { removeMagnetBackground, blobToDataUrl } from "../../lib/bgRemoval";
+import { fileToOptimizedDataUrl, TRIP_PHOTO_OPTIONS } from "../../lib/image";
 import { randomMagnetColor } from "../../lib/skins";
 import { uploadMagnetPhoto } from "../../lib/storage";
 import type { Magnet } from "../../lib/types";
@@ -382,19 +383,13 @@ export function AddMagnet() {
             try {
               const file = e.target.files?.[0];
               if (file) {
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                  try {
-                    const dataUrl = event.target?.result as string;
-                    setTripPhoto(dataUrl);
-                  } catch (err) {
-                    toast.error("Failed to load photo");
-                  }
-                };
-                reader.readAsDataURL(file);
+                // Downscaled and re-encoded to WebP before it becomes a data
+                // URL — this one is persisted inline on the magnet row, so a
+                // raw 5MB camera file would be a ~6.7MB row after base64.
+                setTripPhoto(await fileToOptimizedDataUrl(file, TRIP_PHOTO_OPTIONS));
               }
             } catch (err) {
-              toast.error("Failed to select photo");
+              toast.error("Failed to load photo");
             }
           }}
         />
