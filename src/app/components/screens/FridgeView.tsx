@@ -3,6 +3,7 @@ import { motion, useMotionValue } from "motion/react";
 import type { Magnet, PublicFridge } from "../../lib/types";
 import { DOOR_ZONE } from "../../lib/skins";
 import { useSession } from "../../lib/session";
+import { mulberry32, hashStr } from "../../lib/random";
 import { FridgeAppliance, MagnetTile } from "../fridge";
 import { DEVICE_W } from "../layout";
 import { StoryViewer } from "../story-viewer";
@@ -24,25 +25,6 @@ const CANVAS_H = ILLO_H * (DOOR_ZONE.height / 100);
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 const tileSize = (m: Magnet) => MAGNET_SIZE * (m.scale ?? 1);
 const halfBox = (size: number) => (size * 1.05) / 2; // half of the rotated bounding box
-
-/** Deterministic PRNG (mulberry32) so an unplaced magnet set lands the same way
- *  across renders/sessions (until placement is persisted). */
-function mulberry32(seed: number): () => number {
-  return () => {
-    seed = (seed + 0x6d2b79f5) | 0;
-    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
-function hashStr(s: string): number {
-  let h = 2166136261;
-  for (let i = 0; i < s.length; i++) {
-    h ^= s.charCodeAt(i);
-    h = Math.imul(h, 16777619);
-  }
-  return h >>> 0;
-}
 
 /**
  * Resolve every magnet to a canvas position: stored positions are honored;

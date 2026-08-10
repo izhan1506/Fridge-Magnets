@@ -1,5 +1,70 @@
 /** Geo helpers: haversine distance + reverse geocoding. */
 
+/** Mean km per degree of latitude. Longitude shrinks by cos(lat). */
+const KM_PER_DEG = 111.32;
+
+/** Move a coordinate `distanceKm` along `angleRad` (0 = due north). */
+export function offsetCoords(
+  lat: number,
+  lng: number,
+  distanceKm: number,
+  angleRad: number,
+): { lat: number; lng: number } {
+  if (distanceKm === 0) return { lat, lng };
+
+  const dLat = (distanceKm * Math.cos(angleRad)) / KM_PER_DEG;
+
+  // Longitude degrees get shorter toward the poles. Clamp the cosine so a
+  // near-polar coordinate can't divide by ~0 and fling the pin off the map.
+  const shrink = Math.max(Math.cos((lat * Math.PI) / 180), 0.01);
+  const dLng = (distanceKm * Math.sin(angleRad)) / (KM_PER_DEG * shrink);
+
+  return {
+    lat: Math.max(-85, Math.min(85, lat + dLat)),
+    lng: ((lng + dLng + 540) % 360) - 180, // wrap across the antimeridian
+  };
+}
+
+/**
+ * Where the `index`-th pin sits in a layout of concentric rings whose
+ * neighbours are ~`spacingKm` apart.
+ *
+ * Slot 0 is the centre, so a user who doesn't collide with anyone is never
+ * moved. Ring k sits at radius k×spacing and holds ⌊2πk⌋ slots, which makes
+ * both the gap along a ring and the gap between rings ≈ spacing.
+ *
+ * ⚠️ These offsets are *fabricated*. Home base is stored as a city centroid, so
+ * everyone who picks "London" shares one exact coordinate; this fans them out
+ * so they're individually visible. A pin is NOT where that person actually is.
+ * It's a display-time transform — nothing is written back, so it can be deleted
+ * the day real geocoding lands.
+ */
+export function ringSlot(index: number, spacingKm: number): { distanceKm: number; angleRad: number } {
+  if (index <= 0) return { distanceKm: 0, angleRad: 0 };
+
+  let remaining = index - 1; // slot 0 is the centre
+  let ring = 1;
+  for (;;) {
+    const slots = Math.max(1, Math.floor(2 * Math.PI * ring));
+    if (remaining < slots) {
+      return {
+        distanceKm: ring * spacingKm,
+        // Offset alternate rings by half a step so they don't line up radially.
+        angleRad: ((remaining + (ring % 2) * 0.5) / slots) * 2 * Math.PI,
+      };
+    }
+    remaining -= slots;
+    ring++;
+  }
+}
+
+/** Ground distance spanned by `pixels` screen pixels at a given zoom/latitude. */
+export function pixelsToKm(pixels: number, zoom: number, lat: number): number {
+  const metersPerPixel =
+    (156543.03392 * Math.cos((lat * Math.PI) / 180)) / Math.pow(2, zoom);
+  return (metersPerPixel * pixels) / 1000;
+}
+
 export function haversine(aLat: number, aLng: number, bLat: number, bLng: number): number {
   const R = 6371;
   const dLat = ((bLat - aLat) * Math.PI) / 180;

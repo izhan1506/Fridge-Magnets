@@ -25,6 +25,7 @@ export function WorldMap({
   initialCenter,
   initialZoom = 1,
   onBackgroundClick,
+  onViewChange,
 }: {
   markers: MapMarker[];
   /** Home lat/lng of the viewer's visited places — tonally highlighted. */
@@ -33,6 +34,8 @@ export function WorldMap({
   initialCenter?: { lat: number; lng: number };
   initialZoom?: number;
   onBackgroundClick?: (lat: number, lng: number) => void;
+  /** Fires as the viewport moves — lets callers scale clustering with zoom. */
+  onViewChange?: (view: { zoom: number; lat: number }) => void;
 }) {
   const center = initialCenter ?? { lat: 20, lng: 10 };
 
@@ -47,6 +50,11 @@ export function WorldMap({
         mapStyle={MAP_STYLE}
         style={{ position: "absolute", top: 0, right: 0, bottom: 0, left: 0 }}
         onClick={onBackgroundClick ? handleClick : undefined}
+        onMove={
+          onViewChange
+            ? (e) => onViewChange({ zoom: e.viewState.zoom, lat: e.viewState.latitude })
+            : undefined
+        }
         attributionControl={{ compact: true }}
       >
         <NavigationControl position="bottom-right" showCompass={false} />
