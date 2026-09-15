@@ -40,6 +40,26 @@ function Splash() {
   );
 }
 
+/**
+ * Shown when session init fails. The app used to sit on <Splash /> forever in
+ * this case, so the whole point is that it's an exit: it says what happened and
+ * offers a way out.
+ */
+function ConnectionError({ message, onRetry }: { message: string; onRetry: () => void }) {
+  return (
+    <div className="flex min-h-screen flex-col items-center justify-center px-8 text-center md:min-h-[900px]">
+      <p className="font-fridge text-2xl text-foreground">Can't reach the fridge</p>
+      <p className="mt-3 max-w-[280px] leading-relaxed text-muted-foreground">{message}</p>
+      <button
+        onClick={onRetry}
+        className="mt-7 inline-flex h-12 items-center justify-center rounded-2xl border border-white/30 bg-primary px-6 text-primary-foreground transition hover:brightness-105"
+      >
+        Try again
+      </button>
+    </div>
+  );
+}
+
 /** Wraps screen content with fade/slide entrance animation. */
 function ScreenAnimator({ children }: { children: React.ReactNode }) {
   return (
@@ -57,10 +77,11 @@ function ScreenAnimator({ children }: { children: React.ReactNode }) {
 
 /** Requires an account; funnels unfinished users through onboarding. */
 function Protected({ children }: { children: React.ReactNode }) {
-  const { profile, loading, onboarded } = useSession();
+  const { profile, loading, onboarded, error, retry } = useSession();
   const location = useLocation();
 
   if (loading) return <Splash />;
+  if (error) return <ConnectionError message={error} onRetry={retry} />;
   if (!profile) return <Navigate to="/welcome" replace />;
 
   // If already on onboarding path, let them proceed (don't redirect back)
@@ -79,8 +100,9 @@ function Protected({ children }: { children: React.ReactNode }) {
 
 /** Public routes bounce signed-in users to their fridge. */
 function PublicOnly({ children }: { children: React.ReactNode }) {
-  const { profile, loading, onboarded } = useSession();
+  const { profile, loading, onboarded, error, retry } = useSession();
   if (loading) return <Splash />;
+  if (error) return <ConnectionError message={error} onRetry={retry} />;
   if (profile) return <Navigate to={onboarded ? "/fridge" : "/onboarding/home"} replace />;
   return <ScreenAnimator>{children}</ScreenAnimator>;
 }
@@ -120,7 +142,7 @@ function AppLayout() {
   const location = useLocation();
   /* Wide editorial/reference pages render full-bleed; everything else is the
      phone app and stays inside the 402pt frame. */
-  const isFullWidth = ["/designsystem", "/casestudy"].includes(location.pathname);
+  const isFullWidth = ["/designsystem", "/casestudy", "/case-study"].includes(location.pathname);
 
   return isFullWidth ? (
     <>
