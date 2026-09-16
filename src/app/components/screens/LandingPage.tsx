@@ -1,6 +1,6 @@
 import { type ReactNode } from "react";
 import { Link } from "react-router";
-import { FridgeIllustration } from "../fridge-illustration";
+import { HeroStack } from "../hero-stack";
 
 /**
  * Public marketing page at /landingpage. Rendered full-bleed, outside
@@ -148,56 +148,11 @@ export function LandingPage() {
         </nav>
       </header>
 
+      <HeroStack />
+
       <div className="mx-auto w-full max-w-6xl px-5 md:px-8">
-        {/* ── Hero ── */}
-        <Section className="!pt-16 md:!pt-24">
-          <div className="grid items-center gap-14 md:grid-cols-[1.15fr_1fr]">
-            <div>
-              <Eyebrow>A home for your souvenirs</Eyebrow>
-              <h1 className="mt-6 font-fridge text-6xl leading-[0.9] md:text-8xl">
-                Turn your<br />travels into<br /><span className="text-primary">tales.</span>
-              </h1>
-              <p className="mt-7 max-w-xl text-lg leading-relaxed text-foreground/85 md:text-xl">
-                Snap the magnets you bring home, and they become a fridge you can
-                actually keep — arranged by hand, pinned to a world map, and
-                shared with whoever you like.
-              </p>
-              <div className="mt-9 flex flex-wrap items-center gap-3">
-                <Link
-                  to="/auth"
-                  className="inline-flex h-13 items-center justify-center rounded-2xl border border-white/30 bg-primary px-7 text-primary-foreground transition hover:brightness-105"
-                  style={{ height: 52 }}
-                >
-                  Start your fridge
-                </Link>
-                <Link
-                  to="/casestudy"
-                  className="inline-flex items-center justify-center rounded-2xl border border-white/25 bg-white/10 px-7 backdrop-blur-[7px] transition hover:bg-white/20"
-                  style={{ height: 52 }}
-                >
-                  Read the case study
-                </Link>
-              </div>
-              <p className="mt-5 text-muted-foreground">Free · works in your browser · no app store</p>
-            </div>
-
-            {/* The live illustration, with stand-in magnets on the door */}
-            <div className="relative mx-auto w-full max-w-[320px]">
-              <div
-                className="pointer-events-none absolute -inset-10 rounded-full blur-3xl"
-                style={{ background: "radial-gradient(circle, rgba(244,97,0,0.22), transparent 68%)" }}
-              />
-              <div className="relative">
-                <FridgeIllustration className="w-full select-none" />
-                <span className="absolute left-[26%] top-[14%] h-14 w-14 rotate-[-9deg] rounded-xl bg-primary shadow-2xl" />
-                <span className="absolute left-[54%] top-[27%] h-12 w-12 rotate-[7deg] rounded-xl bg-tertiary shadow-2xl" />
-                <span className="absolute left-[32%] top-[42%] h-14 w-14 rotate-[4deg] rounded-xl bg-secondary shadow-2xl" />
-                <span className="absolute left-[58%] top-[52%] h-11 w-11 rotate-[-5deg] rounded-xl bg-[#7f77dd] shadow-2xl" />
-              </div>
-            </div>
-          </div>
-        </Section>
-
+        {/* ── Hero ── handled by HeroStack, which owns its own sticky
+            scroll stage and so sits outside the page's max-width wrapper. */}
         {/* ── Stat strip ── */}
         <div className="grid grid-cols-2 gap-6 border-y border-border/60 py-10 sm:grid-cols-4">
           {[
