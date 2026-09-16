@@ -260,3 +260,96 @@
   padding: 0 !important;
   color: white !important;
 }
+
+/* ──────────────────────────────────────────────────────────────────────────
+ * SUBJECT LIFT — the iOS-Photos-style "cut out from background" reveal.
+ * Paired with <SubjectLift>. Both effects key off the cutout's alpha channel
+ * so they trace the actual silhouette, not a rectangle.
+ * ────────────────────────────────────────────────────────────────────────── */
+
+.subject-lift {
+  --lift-glow: #7fdcff;
+  line-height: 0;
+}
+
+/* drop-shadow() follows the PNG's transparency, so stacking a few at zero
+   offset produces an outline that hugs the subject's edge. */
+.subject-lift__img {
+  filter:
+    drop-shadow(0 0 2px var(--lift-glow))
+    drop-shadow(0 0 8px var(--lift-glow))
+    drop-shadow(0 0 22px color-mix(in srgb, var(--lift-glow) 75%, transparent));
+}
+
+.subject-lift.lifting .subject-lift__img {
+  animation: subject-lift-glow 2.2s cubic-bezier(0.32, 0.72, 0.29, 1) forwards;
+}
+
+/* Rests at a fraction of the peak — present, but no longer demanding attention. */
+.subject-lift.settled .subject-lift__img {
+  filter:
+    drop-shadow(0 0 1px color-mix(in srgb, var(--lift-glow) 40%, transparent))
+    drop-shadow(0 0 6px color-mix(in srgb, var(--lift-glow) 22%, transparent));
+  transition: filter 600ms ease-out;
+}
+
+@keyframes subject-lift-glow {
+  0% {
+    filter:
+      drop-shadow(0 0 0 transparent)
+      drop-shadow(0 0 0 transparent)
+      drop-shadow(0 0 0 transparent);
+    transform: scale(0.97);
+  }
+  35% {
+    filter:
+      drop-shadow(0 0 3px var(--lift-glow))
+      drop-shadow(0 0 14px var(--lift-glow))
+      drop-shadow(0 0 34px var(--lift-glow));
+    transform: scale(1.02);
+  }
+  70% {
+    filter:
+      drop-shadow(0 0 3px var(--lift-glow))
+      drop-shadow(0 0 12px var(--lift-glow))
+      drop-shadow(0 0 28px color-mix(in srgb, var(--lift-glow) 80%, transparent));
+    transform: scale(1);
+  }
+  100% {
+    filter:
+      drop-shadow(0 0 2px color-mix(in srgb, var(--lift-glow) 45%, transparent))
+      drop-shadow(0 0 8px color-mix(in srgb, var(--lift-glow) 25%, transparent))
+      drop-shadow(0 0 0 transparent);
+    transform: scale(1);
+  }
+}
+
+/* The travelling highlight. Masked to the cutout, so the light lands on the
+   subject only and never on the transparent surround. */
+.subject-lift__sweep {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    115deg,
+    transparent 38%,
+    rgba(255, 255, 255, 0.5) 47%,
+    rgba(214, 245, 255, 0.85) 50%,
+    rgba(255, 255, 255, 0.5) 53%,
+    transparent 62%
+  );
+  background-size: 260% 260%;
+  animation: subject-lift-sweep 1.5s cubic-bezier(0.4, 0, 0.2, 1) 0.15s both;
+}
+
+@keyframes subject-lift-sweep {
+  from { background-position: 160% 160%; opacity: 0; }
+  12%  { opacity: 1; }
+  88%  { opacity: 1; }
+  to   { background-position: -60% -60%; opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .subject-lift.lifting .subject-lift__img { animation: none; }
+  .subject-lift__sweep { display: none; }
+}

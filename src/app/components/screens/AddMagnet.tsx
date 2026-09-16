@@ -6,6 +6,7 @@ import { M3Button, TextField } from "../chrome";
 import { useSession } from "../../lib/session";
 import { reverseGeocode } from "../../lib/geo";
 import { removeMagnetBackground, blobToDataUrl } from "../../lib/bgRemoval";
+import { SubjectLift } from "../subject-lift";
 import { fileToOptimizedDataUrl, TRIP_PHOTO_OPTIONS } from "../../lib/image";
 import { randomMagnetColor } from "../../lib/skins";
 import { uploadMagnetPhoto } from "../../lib/storage";
@@ -271,10 +272,12 @@ export function AddMagnet() {
         <p className="mt-1 text-muted-foreground">Background removed — drag to resize your magnet.</p>
         <div className="my-6 flex flex-1 items-center justify-center overflow-hidden rounded-3xl checker">
           {cutout && (
-            <img
+            // Plays the extraction reveal once, then settles — the moment the
+            // subject "lifts" off the background is the payoff for the wait.
+            <SubjectLift
               src={cutout}
               alt="Magnet cutout preview"
-              className="max-h-[46vh] object-contain transition-transform"
+              className="max-h-[46vh] transition-transform"
               style={{ transform: `scale(${scale})` }}
             />
           )}
