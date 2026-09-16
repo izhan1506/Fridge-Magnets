@@ -30,6 +30,9 @@ const DesignSystem = lazy(() =>
 const CaseStudy = lazy(() =>
   import("./components/screens/CaseStudy").then((m) => ({ default: m.CaseStudy })),
 );
+const LandingPage = lazy(() =>
+  import("./components/screens/LandingPage").then((m) => ({ default: m.LandingPage })),
+);
 
 function Splash() {
   return (
@@ -122,6 +125,8 @@ function Router() {
             into the signed-out redirect. */}
         <Route path="/casestudy" element={<CaseStudy />} />
         <Route path="/case-study" element={<CaseStudy />} />
+        <Route path="/landingpage" element={<LandingPage />} />
+        <Route path="/landing" element={<LandingPage />} />
         <Route path="/welcome" element={<PublicOnly><Welcome /></PublicOnly>} />
         <Route path="/auth" element={<PublicOnly><Auth /></PublicOnly>} />
         <Route path="/onboarding/home" element={<Protected><SetHomeBase /></Protected>} />
@@ -142,7 +147,9 @@ function AppLayout() {
   const location = useLocation();
   /* Wide editorial/reference pages render full-bleed; everything else is the
      phone app and stays inside the 402pt frame. */
-  const isFullWidth = ["/designsystem", "/casestudy", "/case-study"].includes(location.pathname);
+  const isFullWidth = ["/designsystem", "/casestudy", "/case-study", "/landingpage", "/landing"].includes(
+    location.pathname,
+  );
 
   return isFullWidth ? (
     <>
