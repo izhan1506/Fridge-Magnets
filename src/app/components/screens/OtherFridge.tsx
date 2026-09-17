@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams, useLocation } from "react-router";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import type { PublicFridge } from "../../lib/types";
-import { getFridge } from "../../lib/store";
+import { getFridge, getFridgeByPublicId } from "../../lib/store";
 import { generateFridgeId } from "../../lib/fridge-id";
 import { BottomNavBar } from "../glass-nav";
 import { FridgeView } from "./FridgeView";
@@ -14,25 +14,37 @@ export function OtherFridge() {
   const [fridge, setFridge] = useState<PublicFridge | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Get userId from state (passed via nav) or try to derive it
+  /* The map's preview card hands the userId over in router state, which saves a
+     lookup — but router state does not survive a refresh, a bookmark, or a link
+     someone actually shared, and the fridge id is a one-way hash so the userId
+     can't be read back out of the URL. Falling back to a lookup by id is what
+     makes /fridge/fridge-0426 work for anyone who didn't arrive via the map. */
   const userId = (location.state as { userId?: string })?.userId;
 
   useEffect(() => {
+    let cancelled = false;
     (async () => {
       setLoading(true);
       try {
-        console.log(`[OtherFridge] Loading fridge for fridgeId: ${fridgeId}, userId: ${userId}`);
-        const data = userId ? await getFridge(userId) : null;
+        console.log(`[OtherFridge] Loading fridgeId: ${fridgeId} (state userId: ${userId ?? "none"})`);
+        const data = userId
+          ? await getFridge(userId)
+          : fridgeId
+            ? await getFridgeByPublicId(fridgeId)
+            : null;
+        if (cancelled) return;
         console.log(`[OtherFridge] Loaded fridge:`, data);
         setFridge(data);
       } catch (error) {
+        if (cancelled) return;
         console.error(`[OtherFridge] Error loading fridge:`, error);
         setFridge(null);
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     })();
-  }, [userId]);
+    return () => { cancelled = true; };
+  }, [userId, fridgeId]);
 
   return (
     <div className="relative flex h-full flex-col">

@@ -1,5 +1,6 @@
 import type { Magnet, Profile, PublicFridge } from "./types";
 import { supabase } from "./supabase";
+import { generateFridgeId } from "./fridge-id";
 import { deleteMagnetPhoto } from "./storage";
 
 /**
@@ -299,6 +300,37 @@ export async function getPublicFridges(
 
   console.log(`[Store] Returning ${fridges.length} public fridges (excluded: ${excludeUserId})`);
   return fridges;
+}
+
+/**
+ * Resolve a shareable fridge id (`fridge-0426`) to the fridge it names.
+ *
+ * generateFridgeId() is a one-way hash, so the user id can't be recovered from
+ * the URL. Previously the only route to a fridge was the userId handed over in
+ * router state by the map's preview card — which meant a refresh, a bookmark or
+ * a link someone actually shared resolved to nothing. Since the id is derived
+ * deterministically, we can hash the public profiles and find the match.
+ *
+ * Only public profiles are searchable, which is the behaviour you want: a
+ * private fridge shouldn't be reachable by guessing ids.
+ */
+export async function getFridgeByPublicId(fridgeId: string): Promise<PublicFridge | null> {
+  const { data: profiles, error } = await supabase
+    .from("profiles")
+    .select("id")
+    .eq("map_public", true);
+
+  if (error) {
+    console.error("[Store] Error resolving fridge id:", error);
+    throw error;
+  }
+
+  const match = (profiles || []).find((p) => generateFridgeId(p.id) === fridgeId);
+  if (!match) {
+    console.log(`[Store] No public fridge matches ${fridgeId}`);
+    return null;
+  }
+  return getFridge(match.id);
 }
 
 export async function getFridge(userId: string): Promise<PublicFridge | null> {
