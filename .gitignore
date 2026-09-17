@@ -8,3 +8,11 @@ dist/
 .vite/
 .vercel/
 node_modules
+
+# Playwright output
+test-results/
+playwright-report/
+
+# Large source masters for hero imagery — the optimised, shipped copies live
+# in public/hero/. Keeping 18MB of PNGs in git helps nobody.
+design/source-images/

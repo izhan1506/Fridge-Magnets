@@ -243,7 +243,7 @@ This is where user photos will be stored.
 
 Once all 3 migrations are run and verified:
 
-1. ✅ Go to [LAUNCH_STEPS.md](./LAUNCH_STEPS.md)
+1. ✅ Go to [../project/LAUNCH_STEPS.md](./LAUNCH_STEPS.md)
 2. Follow **Step 2** (Verify Supabase Auth Setup)
 3. Follow **Step 3** (Deploy to Vercel)
 4. Follow **Step 4** (Update Auth Redirect URLs)
@@ -265,4 +265,4 @@ Once all 3 migrations are run and verified:
 
 ---
 
-**Questions?** Check [PRE_LAUNCH_CHECKLIST.md](./PRE_LAUNCH_CHECKLIST.md) for more details.
+**Questions?** Check [../project/PRE_LAUNCH_CHECKLIST.md](./PRE_LAUNCH_CHECKLIST.md) for more details.

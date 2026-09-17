@@ -106,7 +106,7 @@ After local testing, add your production domain:
 ## Support
 
 If you get stuck:
-1. Check GOOGLE_OAUTH_SETUP.md for detailed instructions
+1. Check SETUP.md for detailed instructions
 2. Verify Client ID/Secret are correct
 3. Make sure Supabase callback URL is in Google OAuth
 4. Check browser console for errors (F12)
