@@ -24,11 +24,15 @@ function profileFromRow(row: any): Profile {
 /**
  * Every magnet column EXCEPT `trip_photo_url`.
  *
- * Trip photos are stored as base64 data URLs inline on the row — often several
- * MB each — and are only ever rendered by the story viewer. `select("*")` on a
- * list query therefore downloads every trip photo of every user just to draw a
- * name and a magnet count, which is the single biggest cost of opening the map.
- * Use this for lists; fetch the full row only when the viewer needs it.
+ * Trip photos are Storage objects now, so this column holds a short URL for any
+ * magnet created since that change — but rows predating it still carry a base64
+ * data URL inline, one of them 7.5 MB, until the migration in
+ * `scripts/migrate-trip-photos.mjs` has been run against the project.
+ *
+ * Either way the map list has no use for trip photos: it draws a name and a
+ * magnet count. Keeping them out of list queries is correct independently of
+ * how they're stored, so this stays after the migration. Fetch the full row
+ * only where the story viewer actually needs it.
  */
 const MAGNET_LIST_COLUMNS =
   "id,user_id,city,country,lat,lng,caption,instagram_url,photo_url,color,verified,rotation,scale,pos_x,pos_y,created_at";
@@ -201,7 +205,7 @@ export async function addMagnet(magnet: Magnet): Promise<Magnet> {
 }
 
 export async function deleteMagnet(userId: string, id: string): Promise<void> {
-  // Delete the Storage object first
+  // Delete the Storage objects first — cutout and trip photo both
   await deleteMagnetPhoto(userId, id);
 
   // Then delete the DB row

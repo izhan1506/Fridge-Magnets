@@ -7,9 +7,9 @@ import { useSession } from "../../lib/session";
 import { reverseGeocode } from "../../lib/geo";
 import { removeMagnetBackground, blobToDataUrl } from "../../lib/bgRemoval";
 import { SubjectLift } from "../subject-lift";
-import { fileToOptimizedDataUrl, TRIP_PHOTO_OPTIONS } from "../../lib/image";
+import { toWebp, TRIP_PHOTO_OPTIONS } from "../../lib/image";
 import { randomMagnetColor } from "../../lib/skins";
-import { uploadMagnetPhoto } from "../../lib/storage";
+import { uploadMagnetPhoto, uploadTripPhoto } from "../../lib/storage";
 import type { Magnet } from "../../lib/types";
 
 type Step =
@@ -36,9 +36,35 @@ export function AddMagnet() {
   const [country, setCountry] = useState("");
   const [caption, setCaption] = useState("");
   const [instagram, setInstagram] = useState("");
+  /* The trip photo is held as the optimized Blob plus an object URL for the
+     preview. It used to be kept as a base64 data URL and written straight onto
+     the magnet row, which is what made one real row 7.5 MB; it's uploaded to
+     Storage on save now, so the bytes never go near the row. */
   const [tripPhoto, setTripPhoto] = useState<string | null>(null);
+  const [tripPhotoBlob, setTripPhotoBlob] = useState<Blob | null>(null);
   const [saved, setSaved] = useState<Magnet | null>(null);
   const [processingError, setProcessingError] = useState<string>("");
+
+  /** Swap the trip photo, revoking the previous object URL so it isn't leaked.
+   *  The live URL is tracked in a ref rather than read back out of state, so
+   *  creating and revoking stays outside the state updater (which React may
+   *  invoke twice in development). */
+  const tripPhotoUrlRef = useRef<string | null>(null);
+  function setTripPhotoFrom(blob: Blob | null) {
+    if (tripPhotoUrlRef.current) URL.revokeObjectURL(tripPhotoUrlRef.current);
+    const next = blob ? URL.createObjectURL(blob) : null;
+    tripPhotoUrlRef.current = next;
+    setTripPhoto(next);
+    setTripPhotoBlob(blob);
+  }
+
+  // Release the preview URL if the screen goes away mid-flow.
+  useEffect(
+    () => () => {
+      if (tripPhotoUrlRef.current) URL.revokeObjectURL(tripPhotoUrlRef.current);
+    },
+    [],
+  );
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -146,6 +172,19 @@ export function AddMagnet() {
       // Upload to Supabase Storage
       const photoUrl = await uploadMagnetPhoto(profile.id, magnetId, cutoutBlob);
 
+      /* The trip photo goes to Storage too, and the row stores its URL. If the
+         upload fails the magnet is still worth saving, so this degrades to a
+         magnet without a trip photo rather than losing the whole thing. */
+      let tripPhotoUrl: string | undefined;
+      if (tripPhotoBlob) {
+        try {
+          tripPhotoUrl = await uploadTripPhoto(profile.id, magnetId, tripPhotoBlob);
+        } catch (e) {
+          console.error("[AddMagnet] Trip photo upload failed:", e);
+          toast.error("Couldn't upload the trip photo — saving the magnet without it");
+        }
+      }
+
       // Create magnet record with real Storage URL
       const magnet: Magnet = {
         id: magnetId,
@@ -157,7 +196,7 @@ export function AddMagnet() {
         caption: caption.trim(),
         instagramUrl: instagram.trim() || undefined,
         photoUrl,
-        tripPhotoUrl: tripPhoto || undefined,
+        tripPhotoUrl,
         color: randomMagnetColor(),
         verified: !!coords,
         rotation: Math.random() * 12 - 6,
@@ -167,7 +206,7 @@ export function AddMagnet() {
 
       await addMagnet(magnet);
       setSaved(magnet);
-      if (tripPhoto) {
+      if (tripPhotoUrl) {
         toast("Magnet saved with trip photo");
       }
       setStep("saved");
@@ -368,7 +407,7 @@ export function AddMagnet() {
             </M3Button>
             {tripPhoto && (
               <button
-                onClick={() => setTripPhoto(null)}
+                onClick={() => setTripPhotoFrom(null)}
                 className="flex h-10 w-full items-center justify-center gap-2 rounded-2xl border border-destructive/40 text-destructive transition hover:bg-destructive/10 text-sm"
               >
                 <X size={16} />
@@ -386,10 +425,9 @@ export function AddMagnet() {
             try {
               const file = e.target.files?.[0];
               if (file) {
-                // Downscaled and re-encoded to WebP before it becomes a data
-                // URL — this one is persisted inline on the magnet row, so a
-                // raw 5MB camera file would be a ~6.7MB row after base64.
-                setTripPhoto(await fileToOptimizedDataUrl(file, TRIP_PHOTO_OPTIONS));
+                // Downscaled and re-encoded to WebP up front, so what gets
+                // uploaded on save is already the size it should be.
+                setTripPhotoFrom(await toWebp(file, TRIP_PHOTO_OPTIONS));
               }
             } catch (err) {
               toast.error("Failed to load photo");

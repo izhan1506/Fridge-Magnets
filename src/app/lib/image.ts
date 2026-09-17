@@ -114,3 +114,31 @@ export async function fileToOptimizedDataUrl(
 
 /** Trip photos are viewed full-bleed but never printed — 1600px is plenty. */
 export const TRIP_PHOTO_OPTIONS: OptimizeOptions = { maxWidth: 1600, maxHeight: 1600, quality: 0.82 };
+
+/**
+ * Decode a `data:` URL back into a Blob.
+ *
+ * Needed because trip photos used to be persisted as base64 on the magnet row:
+ * an unmigrated magnet arrives as a data URL, and moving it into Storage means
+ * turning it back into bytes. Returns null for anything that isn't a data URL
+ * (e.g. an https:// URL that's already been migrated), so callers can use that
+ * as the "does this still need uploading?" test.
+ */
+export function dataUrlToBlob(url: string): Blob | null {
+  const match = /^data:([^;,]+)(;base64)?,([\s\S]*)$/.exec(url);
+  if (!match) return null;
+
+  const [, mimeType, base64Flag, payload] = match;
+  try {
+    if (base64Flag) {
+      const binary = atob(payload);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+      return new Blob([bytes], { type: mimeType });
+    }
+    return new Blob([decodeURIComponent(payload)], { type: mimeType });
+  } catch {
+    // A truncated or malformed payload shouldn't crash a save path.
+    return null;
+  }
+}

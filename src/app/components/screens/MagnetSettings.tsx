@@ -1,10 +1,11 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router";
 import { ArrowLeft, Link, MoreVertical, Trash2, ImageUp, X } from "lucide-react";
 import { toast } from "../../lib/toast";
 import { useSession } from "../../lib/session";
 import { MAGNET_COLORS } from "../../lib/skins";
-import { fileToOptimizedDataUrl, TRIP_PHOTO_OPTIONS } from "../../lib/image";
+import { toWebp, TRIP_PHOTO_OPTIONS } from "../../lib/image";
+import { uploadTripPhoto, deleteTripPhoto } from "../../lib/storage";
 import type { Magnet } from "../../lib/types";
 import { M3Button, TextField } from "../chrome";
 import { BottomSheet } from "../layout";
@@ -119,23 +120,69 @@ export function MagnetSettings() {
 }
 
 function EditMagnetForm({ magnet, onDone }: { magnet: Magnet; onDone: () => void }) {
-  const { updateMagnet } = useSession();
+  const { profile, updateMagnet } = useSession();
   const [url, setUrl] = useState(magnet.instagramUrl ?? "");
-  const [preview, setPreview] = useState(magnet.tripPhotoUrl ?? null);
+  /* `preview` is whatever should be shown: the magnet's existing trip photo
+     (a Storage URL, or a legacy base64 data URL on an unmigrated row), or an
+     object URL for a freshly picked file. `picked` holds the bytes only in that
+     last case, which is also how save() knows an upload is needed. */
+  const [preview, setPreview] = useState<string | null>(magnet.tripPhotoUrl ?? null);
+  const [picked, setPicked] = useState<Blob | null>(null);
   const [busy, setBusy] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const hasChanges = url !== (magnet.instagramUrl ?? "") || preview !== magnet.tripPhotoUrl;
+  const objectUrlRef = useRef<string | null>(null);
+  function choose(blob: Blob | null) {
+    if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current);
+    const next = blob ? URL.createObjectURL(blob) : null;
+    objectUrlRef.current = next;
+    setPreview(next);
+    setPicked(blob);
+  }
+  useEffect(
+    () => () => {
+      if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current);
+    },
+    [],
+  );
+
+  const removed = !preview && !!magnet.tripPhotoUrl;
+  const hasChanges = url !== (magnet.instagramUrl ?? "") || !!picked || removed;
 
   async function save() {
+    if (!profile) return;
     setBusy(true);
-    await updateMagnet(magnet.id, {
-      instagramUrl: url.trim() || undefined,
-      tripPhotoUrl: preview || undefined,
-    });
-    setBusy(false);
-    toast("Changes saved");
-    onDone();
+    try {
+      /* Three cases, and only the first two touch Storage:
+           picked  → upload the new bytes, store the returned URL
+           removed → drop the row's reference, then delete the object
+           neither → leave trip_photo_url exactly as it was (which may still be
+                     a legacy data URL; re-sending it would be a pointless
+                     multi-MB round trip) */
+      let tripPhotoUrl = magnet.tripPhotoUrl;
+      if (picked) {
+        tripPhotoUrl = await uploadTripPhoto(profile.id, magnet.id, picked);
+      } else if (removed) {
+        tripPhotoUrl = undefined;
+      }
+
+      await updateMagnet(magnet.id, {
+        instagramUrl: url.trim() || undefined,
+        tripPhotoUrl,
+      });
+
+      // Only after the row no longer points at it — orphaning an object is
+      // recoverable, a row pointing at a deleted object is a broken image.
+      if (removed) await deleteTripPhoto(profile.id, magnet.id);
+
+      toast("Changes saved");
+      onDone();
+    } catch (e) {
+      console.error("[MagnetSettings] Save failed:", e);
+      toast.error("Couldn't save your changes — try again");
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
@@ -178,15 +225,14 @@ function EditMagnetForm({ magnet, onDone }: { magnet: Magnet; onDone: () => void
             onChange={async (e) => {
               const file = e.target.files?.[0];
               if (file) {
-                // Same optimization as AddMagnet — this is persisted inline on
-                // the magnet row, so it goes in downscaled and WebP-encoded.
-                setPreview(await fileToOptimizedDataUrl(file, TRIP_PHOTO_OPTIONS));
+                // Same optimization as AddMagnet; uploaded on save.
+                choose(await toWebp(file, TRIP_PHOTO_OPTIONS));
               }
             }}
           />
           {preview && (
             <button
-              onClick={() => setPreview(null)}
+              onClick={() => choose(null)}
               className="flex h-11 w-full items-center justify-center gap-2 rounded-2xl border border-destructive/40 text-destructive transition hover:bg-destructive/10"
             >
               <X size={18} />
