@@ -229,15 +229,22 @@ export function LandingPage() {
         {/* 30% down from 52/72/96px. Kept as explicit values rather than
             snapping to Tailwind's scale, which has nothing within 7% of the
             large end. */}
+        {/* The old line ("Turn your travels into tales") never said what the
+            product actually is. This one names the object and the occasion —
+            a magnet, a trip — and uses the same verb as the CTA, so the promise
+            and the button agree. */}
         <h1 className="mx-auto max-w-4xl font-fridge text-[2.275rem] leading-[0.94] tracking-tight sm:text-[3.15rem] md:text-[4.2rem]">
-          Turn your travels
+          Collect a magnet
           <br />
-          into <MagnetGlyph /> <span className="text-primary">tales</span>
+          from every <MagnetGlyph /> <span className="text-primary">trip</span>
         </h1>
 
-        <p className="mx-auto mt-7 max-w-xl leading-relaxed text-muted-foreground md:text-lg">
-          Snap a photo from any trip, pin it to your fridge, and find fellow
-          travelers on the map.
+        {/* Three beats, in the order they happen, and every one of them true:
+            you photograph a real souvenir, the cutout is automatic, the fridge
+            and the map are where it ends up. */}
+        <p className="mx-auto mt-7 max-w-2xl leading-relaxed text-muted-foreground md:text-lg">
+          Photograph the magnets you bring home — they cut themselves out, stick
+          to your own digital fridge, and put you on the world map.
         </p>
 
         {/* Primary sends you into the product; secondary is the case study,
