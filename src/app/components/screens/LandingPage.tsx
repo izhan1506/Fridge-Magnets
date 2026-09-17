@@ -1,6 +1,9 @@
-import { type ReactNode } from "react";
-import { Link } from "react-router";
-import { HeroStack } from "../hero-stack";
+import { useMemo, useRef, useState, type ReactNode } from "react";
+import { Link, useNavigate } from "react-router";
+import { Search } from "lucide-react";
+import { HeroMatchCut, HERO_SHOTS } from "../hero-stack";
+import { M3Button, SearchBar } from "../design-system";
+import { searchCities } from "../../lib/geo";
 
 /**
  * Public marketing page at /landingpage. Rendered full-bleed, outside
@@ -16,12 +19,143 @@ const COUNTRY_COUNT = 96;
 
 /* ── Pieces ──────────────────────────────────────────────────────────────── */
 
+/**
+ * The inline magnet that sits in the headline.
+ *
+ * Not an icon of a magnet — an actual one. Same construction as the souvenir
+ * magnets stuck to the fridge in the hero photographs directly below: a travel
+ * photo in a white-bordered square, tacked on at a slight angle with a real
+ * drop shadow. So the headline's own punctuation is a specimen of the thing the
+ * product makes, and it rhymes with the photo panel underneath.
+ *
+ * `hero-01` is already fetched eagerly for the match cut, so reusing it here
+ * costs nothing and ties the glyph to the first frame of the sequence.
+ *
+ * Sized in `em` throughout so it tracks the heading at every breakpoint rather
+ * than drifting out of alignment on mobile.
+ */
+function MagnetGlyph() {
+  return (
+    <span
+      aria-hidden="true"
+      className="relative inline-block"
+      style={{
+        width: "0.78em",
+        height: "0.78em",
+        // Sits on the baseline, tipped like something placed by hand.
+        transform: "rotate(-8deg)",
+        verticalAlign: "-0.04em",
+        filter: "drop-shadow(0 0.06em 0.08em rgba(0,0,0,0.45))",
+      }}
+    >
+      <span
+        className="block h-full w-full overflow-hidden bg-white"
+        style={{ borderRadius: "0.1em", padding: "0.055em" }}
+      >
+        <img
+          src={HERO_SHOTS[0].src}
+          alt=""
+          draggable={false}
+          className="h-full w-full select-none object-cover"
+          style={{ borderRadius: "0.055em" }}
+        />
+      </span>
+    </span>
+  );
+}
+
+/**
+ * City search over the real built-in city list (192 cities, geo.ts) — the same
+ * data that powers home-base onboarding, so the suggestions are the actual
+ * places you can pin a fridge to, not decoration.
+ *
+ * The map itself is behind an account, so choosing a city hands off to signup.
+ * That's the honest ceiling for a public page: it proves the list is real and
+ * gets out of the way.
+ */
+function CitySearch() {
+  const nav = useNavigate();
+  const [query, setQuery] = useState("");
+  const [open, setOpen] = useState(false);
+  const blurTimer = useRef<number | null>(null);
+
+  const results = useMemo(
+    () => (query.trim().length > 1 ? searchCities(query).slice(0, 6) : []),
+    [query],
+  );
+  const showResults = open && results.length > 0;
+
+  return (
+    <div className="relative mx-auto w-full max-w-[34rem]">
+      <div className="relative">
+        {/* Design-system SearchBar, padded on the right to seat the button
+            inside the field rather than beside it. */}
+        <SearchBar
+          value={query}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            setOpen(true);
+          }}
+          onFocus={() => setOpen(true)}
+          onBlur={() => {
+            // Deferred so a mousedown on a suggestion still registers.
+            blurTimer.current = window.setTimeout(() => setOpen(false), 120);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") nav("/auth");
+            if (e.key === "Escape") setOpen(false);
+          }}
+          placeholder="Search a city — Tokyo, Lisbon, Karachi"
+          aria-label="Search for a city"
+          /* Right padding reserves the button's footprint so the placeholder
+             and the typed value never run underneath it. Two values because
+             the button loses its label on small screens. */
+          className="!h-14 !rounded-full !pl-5 !pr-[4.25rem] sm:!pr-[8rem]"
+        />
+        <M3Button
+          onClick={() => nav("/auth")}
+          icon={<Search size={18} />}
+          aria-label="Search"
+          className="absolute right-1.5 top-1.5 !h-11 !rounded-full !px-3.5 sm:!px-5"
+        >
+          {/* Icon-only below sm — there isn't room for both the label and a
+              readable placeholder on a 360px screen. */}
+          <span className="hidden sm:inline">Search</span>
+        </M3Button>
+      </div>
+
+      {showResults && (
+        <ul
+          className="absolute inset-x-0 top-[calc(100%+0.5rem)] z-20 overflow-hidden rounded-2xl border border-border bg-card py-1.5 text-left shadow-xl"
+          onMouseEnter={() => {
+            if (blurTimer.current) window.clearTimeout(blurTimer.current);
+          }}
+        >
+          {results.map((c) => (
+            <li key={`${c.city}-${c.country}`}>
+              <button
+                // mousedown, not click: the input's blur would otherwise close
+                // the list before a click ever lands.
+                onMouseDown={() => nav("/auth")}
+                className="flex w-full items-baseline gap-2 px-5 py-2.5 text-left transition hover:bg-white/5"
+              >
+                <span>{c.city}</span>
+                <span className="text-muted-foreground">{c.country}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
 function Eyebrow({ children }: { children: ReactNode }) {
   return <p className="text-[11px] uppercase tracking-[0.22em] text-primary">{children}</p>;
 }
 
-function Section({ children, className = "" }: { children: ReactNode; className?: string }) {
-  return <section className={`py-20 md:py-28 ${className}`}>{children}</section>;
+function Section({ children, className = "", id }: { children: ReactNode; className?: string; id?: string }) {
+  return <section id={id} className={`py-20 md:py-28 ${className}`}>{children}</section>;
 }
 
 function Feature({ art, title, children }: { art: ReactNode; title: string; children: ReactNode }) {
@@ -128,31 +262,73 @@ const artStory = (
 /* ── Page ────────────────────────────────────────────────────────────────── */
 
 export function LandingPage() {
+  const nav = useNavigate();
+
   return (
     <div className="min-h-screen bg-background text-foreground">
-      {/* ── Nav ── */}
+      {/* ── Nav ──
+          Three tracks, so the wordmark is centred on the page rather than
+          centred in whatever space the side groups leave over. The nav links
+          are anchors to sections that genuinely exist further down. */}
       <header className="sticky top-0 z-30 border-b border-border/50 bg-background/80 backdrop-blur-[10px]">
-        <nav className="mx-auto flex w-full max-w-6xl items-center justify-between px-5 py-4 md:px-8">
-          <span className="font-fridge text-xl">Fridge</span>
-          <div className="flex items-center gap-2 sm:gap-4">
-            <Link to="/casestudy" className="hidden px-2 py-1 text-muted-foreground transition hover:text-foreground sm:block">
-              Case study
+        {/* Mobile is a two-track flex row with the wordmark on the left: the
+            three-track centred layout only works once the side groups are
+            roughly even, and below lg the action group is far wider than the
+            (empty) link track, which shoves the wordmark off centre and wraps
+            both labels. The switch is at lg, not md: at exactly 768px the four
+            links plus the actions overflow the page by 8px. From lg up the
+            links appear and the wordmark centres on the page rather than in
+            whatever space the side groups leave over. */}
+        <nav className="mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-5 py-4 md:px-8 lg:grid lg:grid-cols-[1fr_auto_1fr] lg:gap-4">
+          <div className="hidden items-center gap-7 text-muted-foreground lg:flex">
+            <a href="#how" className="whitespace-nowrap transition hover:text-foreground">How it works</a>
+            <a href="#map" className="whitespace-nowrap transition hover:text-foreground">The map</a>
+            <a href="#why" className="whitespace-nowrap transition hover:text-foreground">Why it's different</a>
+            <Link to="/casestudy" className="whitespace-nowrap transition hover:text-foreground">Case study</Link>
+          </div>
+
+          <Link to="/landingpage" className="font-fridge text-xl leading-none lg:justify-self-center">
+            Fridge
+          </Link>
+
+          <div className="flex items-center gap-1 lg:justify-self-end lg:gap-4">
+            <Link to="/auth" className="whitespace-nowrap px-2 py-1 transition hover:text-primary">
+              Log in
             </Link>
-            <Link
-              to="/auth"
-              className="inline-flex h-10 items-center rounded-xl border border-white/30 bg-white/10 px-4 backdrop-blur-[7px] transition hover:bg-white/20"
+            <M3Button
+              onClick={() => nav("/auth")}
+              className="!h-10 whitespace-nowrap !rounded-full !px-4 lg:!px-5"
             >
-              Sign in
-            </Link>
+              Start collecting
+            </M3Button>
           </div>
         </nav>
       </header>
 
-      <HeroStack />
+      {/* ── Hero ──
+          Type on the page, photograph underneath. The copy is the app's own
+          (Welcome screen), and the photo panel is the match cut: one fridge,
+          eight places, cutting on the object. */}
+      <section className="mx-auto w-full max-w-6xl px-5 pt-16 pb-20 text-center md:px-8 md:pt-24 md:pb-28">
+        <h1 className="mx-auto max-w-4xl font-fridge text-[3.25rem] leading-[0.94] tracking-tight sm:text-7xl md:text-8xl">
+          Turn your travels
+          <br />
+          into <MagnetGlyph /> <span className="text-primary">tales</span>
+        </h1>
+
+        <p className="mx-auto mt-7 max-w-xl leading-relaxed text-muted-foreground md:text-lg">
+          Snap a photo from any trip, pin it to your fridge, and find fellow
+          travelers on the map.
+        </p>
+
+        <div className="mt-9">
+          <CitySearch />
+        </div>
+
+        <HeroMatchCut className="mt-14 md:mt-16" />
+      </section>
 
       <div className="mx-auto w-full max-w-6xl px-5 md:px-8">
-        {/* ── Hero ── handled by HeroStack, which owns its own sticky
-            scroll stage and so sits outside the page's max-width wrapper. */}
         {/* ── Stat strip ── */}
         <div className="grid grid-cols-2 gap-6 border-y border-border/60 py-10 sm:grid-cols-4">
           {[
@@ -169,7 +345,7 @@ export function LandingPage() {
         </div>
 
         {/* ── How it works ── */}
-        <Section>
+        <Section className="scroll-mt-24" id="how">
           <Eyebrow>How it works</Eyebrow>
           <h2 className="mt-5 max-w-2xl font-fridge text-4xl leading-none md:text-6xl">
             Three steps, and the hard one is automatic.
@@ -191,7 +367,7 @@ export function LandingPage() {
         </Section>
 
         {/* ── Map ── */}
-        <Section className="!pt-0">
+        <Section className="!pt-0 scroll-mt-24" id="map">
           <div className="grid items-center gap-12 rounded-[2rem] border border-border bg-card p-8 md:grid-cols-2 md:p-14">
             <div>
               <Eyebrow>The map</Eyebrow>
@@ -215,7 +391,7 @@ export function LandingPage() {
         </Section>
 
         {/* ── Why ── */}
-        <Section className="!pt-0">
+        <Section className="!pt-0 scroll-mt-24" id="why">
           <Eyebrow>Why it's different</Eyebrow>
           <h2 className="mt-5 max-w-2xl font-fridge text-4xl leading-none md:text-6xl">
             Built to be kept, not scrolled.
