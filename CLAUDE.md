@@ -1,194 +1,170 @@
-# Fridge Magnets - Development Notes
+# Fridge Magnets — Development Notes
 
-## Latest Session Summary (2026-08-05, later session)
-
-### Focus: Android / wide-screen fridge rendering
-
-**Reported problem:** On some Android devices and wider mobile viewports, the fridge
-body rendered black (invisible) — only the handle groove and magnets were visible.
-A white bar also appeared above the fridge.
-
-### Changes Made (commits 2b49a3c → 743aa79)
-
-| Commit | Change |
-|---|---|
-| `2b49a3c` | Solid-color fallbacks under SVG gradients; FridgeView converted to a real flex column; FridgeAppliance `items-end`→`items-center`, `overflow-y-auto`→`overflow-visible`; `strokeLinecap/Linejoin="round"` on body paths |
-| `9bf5e2e` | `vercel.json` cache headers — `index.html` set to `max-age=0, must-revalidate` so users stop getting a stale bundle |
-| `7ddd0f3` | Removed `py-4` that introduced a white gap |
-| `743aa79` | Removed the fridge's top trim cap (`fridge-cap-grad`, cap rect, cap seam) entirely |
-
-### ⚠️ IMPORTANT — These fixes were NOT verified on a real Android device
-
-This is the key thing to know starting the next session. The root cause of the
-black fridge was **never confirmed** — "Android doesn't render SVG gradients" was a
-hypothesis, not a diagnosis, and it is probably wrong (Chrome on Android has
-supported SVG gradients for years). The changes above are plausible but speculative:
-
-- No Android device or emulator was used at any point.
-- No DevTools inspection of the actual failing element was done.
-- The user reported the white bar *persisted* after the first "fix", which suggests
-  the earlier diagnosis was off.
-- The top trim cap was deleted as a visual fix — this is a **design change**, not a
-  bug fix. If the cap was wanted, restore it from `743aa79^`.
-
-**Do this before trusting any of it:** open the live app on a real Android phone
-(or Chrome DevTools remote debugging), inspect the fridge `<svg>`, and confirm
-whether the body path is present-but-unpainted, or missing/zero-height. That
-distinguishes a paint bug from a layout bug — the two need opposite fixes.
-
-### Alternative hypotheses not yet ruled out
-- `drop-shadow()` filter on the SVG failing/compositing black on some GPUs
-- `aspectRatio` inline style unsupported → SVG collapses to zero height
-- The parent flex chain giving the SVG a 0px box, so only absolutely-positioned
-  magnets (which use fixed px math) still paint
-- A stale service worker / PWA cache serving old assets regardless of headers
+**Last updated:** 2026-09-17
+**Live:** https://fridge-magnets-three.vercel.app · **Repo:** izhan1506/Fridge-Magnets
+**Stack:** React 18 · Vite · TypeScript · Tailwind v4 · Supabase · MapLibre · motion (Framer)
 
 ---
 
-## Session Summary (2026-08-05, earlier session)
+## ⚠️ Read this first
 
-### Major Accomplishments
+**15 commits sit unmerged on `feat/case-study-and-perf`.**
+Nothing below is live. `main` is untouched. Merging that branch is the single
+highest-value action available.
 
-#### 1. Bug Fixes ✅
-- **Fixed black background overflow** on mobile top/bottom - now only shows on desktop preview frame
-- **Fixed fridge height calculation** - corrected from 780px to 950px for proper scaling on all devices (Pixel 7, iPhones, etc.)
-- **Fixed cluster bubble clickability** - added proper event handling with pointer-events-auto and stopPropagation
-
-#### 2. Screen Transitions & Animations ✅
-- **Added smooth fade/slide animations** to all screen transitions
-- New ScreenAnimator component wraps screen content with entrance/exit animations
-- Screens fade in with subtle upward slide on navigation
-- 300ms duration with easeInOut timing for polished feel
-- Applies to all Protected and PublicOnly routes for consistent UX
-
-#### 3. Map Cluster Improvements ✅
-- **New ClusterListSheet component** shows all fridges in a cluster as scrollable list
-- Each list item displays: fridge name, location, featured magnet photo, magnet count
-- **User flow:** Tap cluster bubble → see list of all fridges → tap one to view full preview card
-- Smooth hover animations and scale effects on list items
-- Seamless integration with existing PinPreviewCard
-
-#### 4. Mobile Responsiveness ✅
-- Fridge now scales correctly on all mobile devices (Pixel 7, iPhones, etc.)
-- Better handling of different viewport heights and aspect ratios
-- Fixed empty space issues on Android devices
-
-### Known Working Features
-
-✅ Email signup/login with Google OAuth
-✅ Home base selection (193 cities worldwide)
-✅ Fridge view with draggable magnets
-✅ Map view with public fridges and clustering
-✅ **Clickable cluster list view** (new)
-✅ Add magnet functionality with background removal
-✅ Profile settings and customization
-✅ Smooth Fridge/Map toggle with animation
-✅ **Smooth screen transition animations** (new)
-✅ View other users' fridges via map pins
-✅ Unique fridge IDs for sharing (fridge-XXXX)
-✅ Mobile and desktop responsive layouts
-✅ PWA fullscreen/standalone mode on mobile
-✅ Custom home screen app icon
-✅ Design system component showcase
-✅ Magnets display freely without rotation constraints
-✅ **Responsive on all mobile screen sizes** (new)
-
-### Current State
-
-- **Live URL:** https://fridge-magnets-three.vercel.app
-- **Custom Domain:** fridgetales.app (DNS pending)
-- **Repository:** izhan1506/Fridge-Magnets (main branch)
-- **Status:** MVP complete with polish & animations
-- **Build:** All changes deployed via Vercel auto-deploy
-
-### Files Modified This Session
-
-**Modified Files:**
-- src/app/App.tsx (added ScreenAnimator, AnimatePresence for screen transitions)
-- src/app/components/layout.tsx (fixed black background overflow - md: breakpoint)
-- src/app/components/mappins.tsx (new ClusterListSheet component, fixed ClusterBubble event handling)
-- src/app/components/screens/MapScreen.tsx (integrated ClusterListSheet, improved state management)
-- src/app/components/screens/FridgeView.tsx (fixed ILLO_H calculation 780 → 950)
-
-### Testing Checklist (This Session)
-
-✅ Black overflow areas gone on mobile (top/bottom)
-✅ Screen transitions smooth and polished
-✅ Cluster bubbles clickable on map
-✅ Cluster list shows all fridges
-✅ List items clickable to show preview card
-✅ Close button closes list
-✅ Fridge scales correctly on Pixel 7
-✅ Fridge scales correctly on iPhones
-✅ Magnets properly positioned on all sizes
-✅ No white space issues on Android
-
-### Next Steps for Future Sessions
-
-1. **Beta Testing** - Recruit and onboard 10 initial testers
-2. **Feedback Collection** - Create feedback form/survey
-3. **Loading States** - Add spinners for async operations
-4. **Error Messages** - Better UX for failed operations
-5. **Analytics** - Track user engagement and feature usage
-6. **Performance** - Optimize images and bundle size
-7. **Social Features** - Comments, likes, or reactions on magnets
-8. **Search & Filter** - Find fridges by location/destination
-9. **Domain Setup** - Configure DNS for fridgetales.app
-10. **Notifications** - Real-time alerts for visitor activity
-
-### Key Technical Decisions
-
-- **Screen Animations:** 300ms fade+slide for smooth navigation experience
-- **Cluster UX:** List view better than individual pins for dense areas
-- **Fridge Height:** 950px viewBox for proper scaling on all devices
-- **Mobile Breakpoint:** Only show dark background on desktop (md:) preview frame
-- **Event Handling:** pointer-events-auto + stopPropagation for reliable clicks
-
-### Known Issues & Notes
-
-- **Supabase rate limiting:** Users hitting email rate limit on signup (fixed by waiting 1 hour or using Google OAuth)
-- **PinPreviewCard navigation:** Navigation to view other fridges may need verification (was on bug list)
-
-### Development Workflow
-
-1. Read CLAUDE.md for project context
-2. Check git log for recent changes
-3. Use design-system.tsx components for UI
-4. Test on both mobile (Pixel, iPhone) and desktop
-5. Commit with descriptive messages
-6. Auto-deploys via Vercel on main branch push
-7. Update CLAUDE.md after major changes
-
-### Tagline & Brand
-
-**"Turn your travels into tales"** - Primary brand message
-- Every trip becomes a digital memory
-- Fridge magnets as travel mementos
-- Global traveler community
-
-### Launch Readiness
-
-✅ Core features complete and polished
-✅ Mobile experience optimized for all screen sizes
-✅ Smooth animations throughout app
-✅ PWA fullscreen support ready
-✅ Professional UI and branding
-✅ Extensive city database (193 cities)
-✅ Map with responsive clustering
-
-The app is **ready for beta testing**. All UI/UX polish complete; focus should now be on:
-1. Gathering user feedback from 10 beta testers
-2. Fixing any reported bugs
-3. Iterating based on real usage patterns
+```
+fd39762 fix(fridge): make shared fridge links actually resolve
+5bc756b feat(landing): match hero copy to the app heading style, anchor it to the fridge
+281b2ee chore: organise the repo root
+4c60b8b feat(landing): hard-cut hero, design-system heading and button
+de52c9d feat(landing): photo stack hero that scrolls into the app
+208db3d feat: add public landing page at /landingpage
+1abe688 feat(add): iOS-style "lift subject" reveal on the cutout
+a7cfbe2 fix(session): never strand the app on the loading screen
+2e81cc3 feat(casestudy): add research section, step-by-step flow and visuals
+7c7948a feat: add public case study page, lazy-load heavy screens
+09112ad perf(data): stop fetching trip photos in the map list query
+5da0ad4 feat(map): fan out coincident pins and scale clustering with zoom
+3570af7 perf(images): convert user photos to WebP on capture
+a0db8da style: match SearchBar radius to TextField, relabel magnets row
+19fa456 fix(fridge): fit the illustration on screen and clear the header
+```
 
 ---
 
-**Last Updated:** 2026-08-05
-**Session Duration:** Bug fixes, animations, map improvements
-**Status:** MVP complete and polished - ready for beta launch
-**Recent Commits:** 
-- Fix black background overflow (mobile)
-- Add screen transition animations  
-- Add clickable cluster list view
-- Fix cluster bubble event handling
-- Fix fridge height calculation
+## What's verified vs. what isn't
+
+Verified means it was measured or rendered and the result looked at — not "the
+code looks right".
+
+| Area | State |
+| --- | --- |
+| Shared fridge links (`/fridge/fridge-XXXX`) | ✅ 4 real ids resolved to the right owners, ~30ms; unknown id returns null |
+| Map query payload | ✅ 7,830 KB → 9.4 KB on real data (99.9%) |
+| WebP conversion | ✅ alpha preserved, Safari fallback guarded — but tested with synthetic images, not a real photo through the real flow |
+| Session error handling | ✅ stale token + dead backend → error screen with retry, not an infinite spinner |
+| Pin ring layout | ✅ 0.999km spacing, deterministic, 500/500 distinct, pole/antimeridian safe |
+| Boot bundle | ✅ browser fetches only main JS + CSS; maplibre (1MB) no longer eager |
+| Case study / landing pages | ✅ no horizontal scroll at 360/390/768/1280 |
+| Hero hard-cut | ✅ no transition/animation on the images |
+| **Anything on a real Android device** | ❌ **never** |
+| **A real signed-in session end to end** | ❌ never — no credentials |
+| **Native share sheet** | n/a — that feature was reverted |
+| **Types** | ❌ `typescript` isn't a dependency; `npm run typecheck` cannot run |
+
+---
+
+## Open issues, highest value first
+
+1. **Merge the branch.** 15 verified commits are doing nothing on a branch.
+2. **Trip photos are base64 in the DB.** One row is **7.5 MB**. `getPublicFridges`
+   no longer fetches them, but `getMagnets` and `getFridge` still do — so that
+   magnet's owner re-downloads 7.5 MB every time they open their own fridge.
+   The real fix is moving them to Supabase Storage like the cutouts. Needs a
+   migration for existing rows.
+3. **Fridge overflows the bottom nav by ~200px** (194 Pixel 7 / 245 Galaxy S8).
+   The base of the appliance is cut off. A fix was written and then reverted by
+   request — the tradeoff is a narrower fridge (317px of 412px) to fit it whole.
+4. **Fridge id space is 10,000.** `abs(hash) % 10000` → ~50% chance of a
+   collision at ~118 users, and a collision makes one fridge unreachable. Needs
+   a real `fridge_id` column with a uniqueness constraint.
+5. **Android black-fridge bug — the original 2026-08 report, still unconfirmed.**
+   Ruled out with evidence: SVG gradients render fine, the svg doesn't collapse,
+   `aspect-ratio` is supported, and there is **no service worker in the repo at
+   all**, so the "stale SW" theory was never possible. Leading untested theory: a
+   `vh`/`dvh` mismatch in `layout.tsx` (outer `min-h-screen` = 100vh, inner
+   `100dvh`) which only manifests on mobile browsers with a dynamic toolbar.
+6. **5 of 15 public profiles are invisible on the map** — home coords are exactly
+   `(0,0)`, i.e. they signed up but never finished home-base onboarding.
+7. **`ScreenHeading` is `text-[#171717]`** — byte-identical to `--background`, so
+   the "Set your home base" title is dark-on-dark. Fix was written then reverted
+   along with the glass bar.
+8. **No typecheck.** Add `typescript` as a devDependency; the build uses esbuild,
+   which strips types without checking them.
+
+---
+
+## Routes
+
+| Path | Auth | Notes |
+| --- | --- | --- |
+| `/landingpage`, `/landing` | public | Marketing. Full-bleed hero, hard-cutting photo stack |
+| `/casestudy`, `/case-study` | public | Product design case study |
+| `/designsystem` | public | Component showcase |
+| `/welcome`, `/auth` | public-only | Signed-in users get bounced to `/fridge` |
+| `/fridge`, `/map`, `/add`, `/settings`, `/settings/magnets` | protected | |
+| `/fridge/:fridgeId` | protected | Someone else's fridge; resolves by id or router state |
+
+`MapScreen`, `AddMagnet`, `DesignSystem`, `CaseStudy` and `LandingPage` are
+`React.lazy`. The full-width pages render outside `PhoneFrame` — see
+`isFullWidth` in `App.tsx`; **add new full-width routes to that array or they
+render inside the 402pt phone frame.**
+
+---
+
+## Architecture notes worth knowing
+
+- **The fridge is one hand-authored SVG** (`fridge-illustration.tsx`), viewBox
+  400×950. `bodyLeftAtY()` returns the body's edge at any height by solving the
+  corner Bézier — use it for anything that must sit flush to the silhouette.
+  The top trim seam is at `BODY_Y1 + BODY_R`, not a magic number.
+- **Magnet placement** is a percentage of `DOOR_ZONE` (`skins.ts`), not pixels.
+  Note `APPLIANCE_W` in `FridgeView` derives from a hardcoded `DEVICE_W = 402`
+  while mobile actually renders `w-full` — these disagree on any non-402px
+  screen, and the error grows with width.
+- **Map clustering is measured in screen pixels** (`CLUSTER_RADIUS_PX`), not km,
+  so it scales with zoom. Pins sharing a coordinate fan onto 1km rings via
+  `ringSlot()`. Those offsets are fabricated for legibility — a pin is not where
+  that person is. The real fix is finer location at sign-up.
+- **`lib/image.ts`** converts every user photo to WebP on capture. It is
+  best-effort by design: every failure path returns the original blob, so
+  optimisation can never be why a save fails. Safari <16 can't encode WebP and
+  `toBlob` silently returns PNG — that's why extension and contentType are read
+  off the resulting blob rather than assumed.
+- **`SessionProvider` must always leave the loading state.** `setLoading(false)`
+  is in a `finally`, with a 12s timeout. Before that, any backend error left the
+  app on `<Splash />` forever.
+
+---
+
+## Testing gotchas that cost real time
+
+- **Headless Chrome ignores `--window-size` for layout.** It reported a 500px
+  viewport when asked for 412. Screenshots get cropped to the requested size
+  while the page lays out wider, which *looks* exactly like a responsive bug.
+  Measure inside a fixed-width **iframe** instead — media queries resolve
+  correctly there.
+- **`--dump-dom` fires before React mounts**, so an empty `#root` means nothing.
+- **Chrome throttles offscreen iframes**, stalling timer chains inside them.
+  Keep the iframe on screen when driving it.
+- **Scroll-driven animations:** don't verify by scrolling an iframe — it silently
+  failed to reach the progress values it claimed and made a working transition
+  look broken. Pin the progress value directly instead.
+- **Freeze CSS animations** for screenshots with a negative `animation-delay`
+  plus `animation-play-state: paused`.
+- **Element ids built from display labels break `url(#…)`** — spaces and colons
+  in an id silently kill SVG `clipPath`/gradient references.
+
+---
+
+## Conventions
+
+- Use `design-system.tsx` components (`M3Button`, `TextField`, `SearchBar`,
+  `GlassSquareIconButton`) rather than hand-rolled equivalents.
+- Docs live in `docs/` — `setup/`, `design/`, `project/`, `reference/`.
+  `docs/setup/oauth/` has seven overlapping guides that should be collapsed.
+- `design/source-images/` holds the 19MB hero masters and is gitignored; the
+  shipped copies are `public/hero/*.jpg`.
+- Vercel auto-deploys `main`; branches get preview URLs.
+
+---
+
+## Environment
+
+`.env` needs `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`. The Supabase
+project paused once during development (free tier pauses after ~1 week idle) —
+DNS stopped resolving and the app hung on the splash screen. If the app won't
+load, check the Supabase dashboard before debugging the code.
+
+**Disk:** the machine hit 100% full mid-session and both `npm run build` and
+`git commit` failed with `ENOSPC`. ~2GB free at time of writing.
