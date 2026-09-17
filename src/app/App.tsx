@@ -114,32 +114,35 @@ function Router() {
   const location = useLocation();
 
   return (
-    <AnimatePresence mode="wait">
-      {/* Suspense boundary for the lazily-loaded screens above. */}
-      <Suspense fallback={<Splash />}>
-      <Routes location={location} key={location.pathname}>
-        <Route path="/designsystem" element={<DesignSystem />} />
-        {/* Public — deliberately NOT wrapped in Protected/PublicOnly so the
-            case study is shareable without an account. The hyphenated spelling
-            is aliased because the catch-all below would otherwise bounce it
-            into the signed-out redirect. */}
-        <Route path="/casestudy" element={<CaseStudy />} />
-        <Route path="/case-study" element={<CaseStudy />} />
-        <Route path="/landingpage" element={<LandingPage />} />
-        <Route path="/landing" element={<LandingPage />} />
-        <Route path="/welcome" element={<PublicOnly><Welcome /></PublicOnly>} />
-        <Route path="/auth" element={<PublicOnly><Auth /></PublicOnly>} />
-        <Route path="/onboarding/home" element={<Protected><SetHomeBase /></Protected>} />
-        <Route path="/fridge" element={<Protected><FridgeScreen /></Protected>} />
-        <Route path="/fridge/:fridgeId" element={<Protected><OtherFridge /></Protected>} />
-        <Route path="/map" element={<Protected><MapScreen /></Protected>} />
-        <Route path="/add" element={<Protected><AddMagnet /></Protected>} />
-        <Route path="/settings" element={<Protected><SettingsScreen /></Protected>} />
-        <Route path="/settings/magnets" element={<Protected><MagnetSettings /></Protected>} />
-        <Route path="*" element={<Navigate to="/fridge" replace />} />
-      </Routes>
-      </Suspense>
-    </AnimatePresence>
+    /* Suspense sits ABOVE AnimatePresence, not inside it. AnimatePresence
+       tracks presence by the key of its direct child, so an unkeyed <Suspense>
+       in between made every route change an instant swap and the 0.3s exit
+       transition never ran. Keyed <Routes> has to stay the direct child. */
+    <Suspense fallback={<Splash />}>
+      <AnimatePresence mode="wait">
+        <Routes location={location} key={location.pathname}>
+          <Route path="/designsystem" element={<DesignSystem />} />
+          {/* Public — deliberately NOT wrapped in Protected/PublicOnly so the
+              case study is shareable without an account. The hyphenated spelling
+              is aliased because the catch-all below would otherwise bounce it
+              into the signed-out redirect. */}
+          <Route path="/casestudy" element={<CaseStudy />} />
+          <Route path="/case-study" element={<CaseStudy />} />
+          <Route path="/landingpage" element={<LandingPage />} />
+          <Route path="/landing" element={<LandingPage />} />
+          <Route path="/welcome" element={<PublicOnly><Welcome /></PublicOnly>} />
+          <Route path="/auth" element={<PublicOnly><Auth /></PublicOnly>} />
+          <Route path="/onboarding/home" element={<Protected><SetHomeBase /></Protected>} />
+          <Route path="/fridge" element={<Protected><FridgeScreen /></Protected>} />
+          <Route path="/fridge/:fridgeId" element={<Protected><OtherFridge /></Protected>} />
+          <Route path="/map" element={<Protected><MapScreen /></Protected>} />
+          <Route path="/add" element={<Protected><AddMagnet /></Protected>} />
+          <Route path="/settings" element={<Protected><SettingsScreen /></Protected>} />
+          <Route path="/settings/magnets" element={<Protected><MagnetSettings /></Protected>} />
+          <Route path="*" element={<Navigate to="/fridge" replace />} />
+        </Routes>
+      </AnimatePresence>
+    </Suspense>
   );
 }
 
