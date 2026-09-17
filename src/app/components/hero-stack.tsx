@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useReducedMotion } from "motion/react";
 
 /**
@@ -34,20 +34,43 @@ export const HERO_SHOTS: HeroShot[] = [
   { src: "/hero/hero-08.jpg", alt: "The same fridge on a terrace overlooking the Nile and the pyramids at sunset" },
 ];
 
-/** How long each location holds before the cut. */
-const CUT_MS = 2600;
+/** How long each location holds before the cut. ~870ms is a fast, deliberate
+ *  rhythm — 3x the original 2600ms — so the full eight-location cycle runs in
+ *  about 7s instead of 21s. */
+const CUT_MS = 870;
 
 export function HeroMatchCut({ className = "" }: { className?: string }) {
   const reduceMotion = useReducedMotion();
   const [index, setIndex] = useState(0);
 
+  /* ── Don't cut to a frame that hasn't arrived ──
+     At 870ms a full cycle is ~7s, but the eight photographs take ~8s to
+     download on a 1.6Mbps link — so the sequence outran the network and spent
+     roughly half of the first cycle showing an empty panel where a photo should
+     be (measured: 138 of 280 samples on Fast 3G). Holding on the first frame
+     until the whole set has settled costs a few static seconds on a slow
+     connection and shows a real photograph throughout, instead of flickering
+     through blanks.
+
+     Keyed by src so a ref callback firing more than once can't double-count,
+     and `onError` settles too — a missing file shouldn't freeze the sequence
+     forever. */
+  const [ready, setReady] = useState(false);
+  const settledRef = useRef<Set<string>>(new Set());
+
+  const settle = useCallback((src: string) => {
+    if (settledRef.current.has(src)) return;
+    settledRef.current.add(src);
+    if (settledRef.current.size >= HERO_SHOTS.length) setReady(true);
+  }, []);
+
   useEffect(() => {
     // Respect reduced motion by simply not cutting — the first shot stands on
     // its own, and nothing about the page depends on the sequence advancing.
-    if (reduceMotion) return;
+    if (reduceMotion || !ready) return;
     const id = setInterval(() => setIndex((i) => (i + 1) % HERO_SHOTS.length), CUT_MS);
     return () => clearInterval(id);
-  }, [reduceMotion]);
+  }, [reduceMotion, ready]);
 
   return (
     <figure
@@ -68,9 +91,20 @@ export function HeroMatchCut({ className = "" }: { className?: string }) {
                announced eight times over. */
             alt={active ? shot.alt : ""}
             aria-hidden={!active}
+            /* Still lazy for frames 1-7: they're all inside the viewport so the
+               browser fetches them immediately anyway, and marking them eager
+               would only make 1.4MB of photographs compete with the CSS and JS
+               the page needs to render at all. */
             loading={i === 0 ? "eager" : "lazy"}
             decoding="async"
             draggable={false}
+            /* A cached image can be complete before React attaches onLoad, so
+               check on attach as well as on the event. */
+            ref={(el) => {
+              if (el?.complete && el.naturalWidth > 0) settle(shot.src);
+            }}
+            onLoad={() => settle(shot.src)}
+            onError={() => settle(shot.src)}
             className="absolute inset-0 h-full w-full select-none object-cover"
             style={{ visibility: active ? "visible" : "hidden" }}
           />
