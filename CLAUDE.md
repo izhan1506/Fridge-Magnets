@@ -8,27 +8,16 @@
 
 ## ⚠️ Read this first
 
-**15 commits sit unmerged on `feat/case-study-and-perf`.**
-Nothing below is live. `main` is untouched. Merging that branch is the single
-highest-value action available.
+**The branch is merged.** `feat/case-study-and-perf` (17 commits) fast-forwarded
+onto `main` on 2026-09-17, so everything below is live via Vercel.
 
-```
-fd39762 fix(fridge): make shared fridge links actually resolve
-5bc756b feat(landing): match hero copy to the app heading style, anchor it to the fridge
-281b2ee chore: organise the repo root
-4c60b8b feat(landing): hard-cut hero, design-system heading and button
-de52c9d feat(landing): photo stack hero that scrolls into the app
-208db3d feat: add public landing page at /landingpage
-1abe688 feat(add): iOS-style "lift subject" reveal on the cutout
-a7cfbe2 fix(session): never strand the app on the loading screen
-2e81cc3 feat(casestudy): add research section, step-by-step flow and visuals
-7c7948a feat: add public case study page, lazy-load heavy screens
-09112ad perf(data): stop fetching trip photos in the map list query
-5da0ad4 feat(map): fan out coincident pins and scale clustering with zoom
-3570af7 perf(images): convert user photos to WebP on capture
-a0db8da style: match SearchBar radius to TextField, relabel magnets row
-19fa456 fix(fridge): fit the illustration on screen and clear the header
-```
+Reviewed before merging with: a clean `vite build`, a full-strict `tsc --noEmit`
+compared against the same check on `main` (identical 7 errors — the branch added
+none), a real-Chrome render of every new page at 5 widths, the geo math unit-run
+against the real coordinate collision in the database, and the payload/fridge-id
+claims re-measured against production data. One regression was found and fixed
+during review (`00083a5`): route exit transitions had stopped running because
+`<Suspense>` landed between `<AnimatePresence>` and the keyed `<Routes>`.
 
 ---
 
@@ -39,48 +28,65 @@ code looks right".
 
 | Area | State |
 | --- | --- |
-| Shared fridge links (`/fridge/fridge-XXXX`) | ✅ 4 real ids resolved to the right owners, ~30ms; unknown id returns null |
-| Map query payload | ✅ 7,830 KB → 9.4 KB on real data (99.9%) |
-| WebP conversion | ✅ alpha preserved, Safari fallback guarded — but tested with synthetic images, not a real photo through the real flow |
+| Shared fridge links (`/fridge/fridge-XXXX`) | ✅ all 15 public profiles hash to 15 distinct ids, 0 collisions; unknown id returns null |
+| Map query payload | ✅ re-measured 2026-09-17: 7,830.3 KB → 9.4 KB on production data (99.88%); `MAGNET_LIST_COLUMNS` matches the live row exactly, minus `trip_photo_url` |
+| WebP conversion | ✅ **now tested with real photos**: 3 real bg-removed cutouts pulled from Storage + a real camera JPEG, run through `toWebp` in Chrome. Alpha byte-identical (mean alpha delta 0.00, transparent-pixel share unchanged), 75–89% smaller on cutouts, 27% on the JPEG, opaque colour drift <1/255. Undecodable blob returns the same object and never throws |
 | Session error handling | ✅ stale token + dead backend → error screen with retry, not an infinite spinner |
-| Pin ring layout | ✅ 0.999km spacing, deterministic, 500/500 distinct, pole/antimeridian safe |
-| Boot bundle | ✅ browser fetches only main JS + CSS; maplibre (1MB) no longer eager |
-| Case study / landing pages | ✅ no horizontal scroll at 360/390/768/1280 |
+| Pin ring layout | ✅ 0.9989km spacing on the real Karachi 4-pin collision, deterministic, 500/500 distinct, antimeridian-safe. At a pole the clamp collapses moved pins to lat ±85 (distinct in longitude only) — degenerate but harmless |
+| Boot bundle | ✅ CDP network trace on `/landingpage`: exactly 3 assets — entry (195 KB gzip), route chunk (4.1 KB), CSS (28 KB). maplibre and onnx-runtime not fetched |
+| Case study / landing pages | ✅ real render at 360/390/412/768/1280 — `scrollWidth == clientWidth` at every width, full text content present, zero console messages |
 | Hero hard-cut | ✅ no transition/animation on the images |
-| **Anything on a real Android device** | ❌ **never** |
-| **A real signed-in session end to end** | ❌ never — no credentials |
 | **Native share sheet** | n/a — that feature was reverted |
-| **Types** | ❌ `typescript` isn't a dependency; `npm run typecheck` cannot run |
+| Route exit transitions | ✅ A/B against a build of `main`, DOM sampled every 60ms: old screen holds t=61→301ms, new screen mounts at t=362ms on both |
+| **Anything on a real Android device** | ❌ **never** |
+| **A real signed-in session end to end** | ❌ never — no credentials. Every success path that needs auth (saving a magnet, the WebP upload actually reaching Storage, onboarding) is still unexercised |
+| **Types** | ⚠️ no `tsconfig.json`, `typescript` not a dependency. A throwaway full-strict run found 7 errors, all pre-existing on `main` — see open issue 7 |
 
 ---
 
 ## Open issues, highest value first
 
-1. **Merge the branch.** 15 verified commits are doing nothing on a branch.
-2. **Trip photos are base64 in the DB.** One row is **7.5 MB**. `getPublicFridges`
+1. **Trip photos are base64 in the DB.** One row is **7.5 MB**. `getPublicFridges`
    no longer fetches them, but `getMagnets` and `getFridge` still do — so that
    magnet's owner re-downloads 7.5 MB every time they open their own fridge.
    The real fix is moving them to Supabase Storage like the cutouts. Needs a
    migration for existing rows.
-3. **Fridge overflows the bottom nav by ~200px** (194 Pixel 7 / 245 Galaxy S8).
+2. **Fridge overflows the bottom nav by ~200px** (194 Pixel 7 / 245 Galaxy S8).
    The base of the appliance is cut off. A fix was written and then reverted by
    request — the tradeoff is a narrower fridge (317px of 412px) to fit it whole.
-4. **Fridge id space is 10,000.** `abs(hash) % 10000` → ~50% chance of a
-   collision at ~118 users, and a collision makes one fridge unreachable. Needs
-   a real `fridge_id` column with a uniqueness constraint.
-5. **Android black-fridge bug — the original 2026-08 report, still unconfirmed.**
+3. **Fridge id space is 10,000.** `abs(hash) % 10000` → ~50% chance of a
+   collision at ~118 users, and a collision makes one fridge unreachable.
+   Measured 2026-09-17: 15 public profiles, 15 distinct ids, **0 collisions** —
+   so it works today and the risk is purely about growth. Needs a real
+   `fridge_id` column with a uniqueness constraint before the user count climbs.
+4. **Android black-fridge bug — the original 2026-08 report, still unconfirmed.**
    Ruled out with evidence: SVG gradients render fine, the svg doesn't collapse,
    `aspect-ratio` is supported, and there is **no service worker in the repo at
    all**, so the "stale SW" theory was never possible. Leading untested theory: a
    `vh`/`dvh` mismatch in `layout.tsx` (outer `min-h-screen` = 100vh, inner
    `100dvh`) which only manifests on mobile browsers with a dynamic toolbar.
-6. **5 of 15 public profiles are invisible on the map** — home coords are exactly
+5. **5 of 15 public profiles are invisible on the map** — home coords are exactly
    `(0,0)`, i.e. they signed up but never finished home-base onboarding.
-7. **`ScreenHeading` is `text-[#171717]`** — byte-identical to `--background`, so
+6. **`ScreenHeading` is `text-[#171717]`** — byte-identical to `--background`, so
    the "Set your home base" title is dark-on-dark. Fix was written then reverted
    along with the glass bar.
-8. **No typecheck.** Add `typescript` as a devDependency; the build uses esbuild,
-   which strips types without checking them.
+7. **No typecheck in the repo.** The build uses esbuild, which strips types
+   without checking them; there is no `tsconfig.json` and `typescript` is not a
+   dependency, so `npm run typecheck` cannot run.
+
+   A throwaway full-strict `tsc --noEmit` during the merge review found exactly
+   **7 errors, all pre-existing** (the identical set appears on `main`). Two are
+   real latent bugs, the rest are cosmetic:
+
+   - `AddMagnet.tsx` / `SetHomeBase.tsx` destructure `reverseGeocode()`'s result
+     without a null check — **it returns `{city,country} | null`, so a failed
+     geocode is a `TypeError` at runtime.** The genuine bug of the seven.
+   - `session.tsx` passes `store.signInWithGoogle()` (which returns `void`,
+     being a redirect flow) into `loadFor(p: Profile | null)`, so `profile`
+     briefly becomes `undefined` rather than `null`. Harmless today because the
+     page is navigating away, and `!profile` still reads as signed-out.
+   - `MapScreen.tsx` builds a display-only `Profile` without `email`.
+   - `main.tsx` imports with an explicit `.tsx` extension — config, not code.
 
 ---
 
