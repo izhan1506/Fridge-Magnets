@@ -1,4 +1,3 @@
-import { MapPin } from "lucide-react";
 import { FridgeIllustration } from "./fridge-illustration";
 import { BottomNavBar, GlassSquareIconButton } from "./design-system";
 
@@ -24,10 +23,11 @@ import { BottomNavBar, GlassSquareIconButton } from "./design-system";
 
 /** A magnet on the showcase fridge door.
  *
- *  `left`/`top` are percentages of the illustration box, and `width` is a
- *  percentage of it too — the same coordinate space DOOR_ZONE uses, so these
- *  land on the door face at any rendered size. `rotate` is each magnet's real
- *  stored rotation, so the arrangement is the owner's, not invented. */
+ *  `left`/`top` are the magnet's CENTRE as a percentage of the illustration box
+ *  — the same coordinate space DOOR_ZONE uses — and `width` is a percentage of
+ *  the box's width. Centring is done with a transform rather than by offsetting
+ *  the top-left, so placing one needs no per-image aspect-ratio arithmetic.
+ *  `rotate` is each magnet's real stored rotation. */
 type DoorMagnet = {
   src: string;
   alt: string;
@@ -38,29 +38,33 @@ type DoorMagnet = {
 };
 
 const DOOR_MAGNETS: DoorMagnet[] = [
-  { src: "/magnets/oslo-plate.webp", alt: "An Oslo souvenir number plate magnet", left: 29, top: 12, width: 34, rotate: -5.4 },
-  { src: "/magnets/vienna.webp", alt: "A yellow “No Kangaroos in Austria” road sign magnet from Vienna", left: 19, top: 25, width: 26, rotate: 2.2 },
-  { src: "/magnets/berlin.webp", alt: "A round SDD Berlin badge magnet", left: 55, top: 26, width: 24, rotate: -4 },
-  { src: "/magnets/prague.webp", alt: "A Prague souvenir number plate magnet", left: 32, top: 40, width: 32, rotate: 0.1 },
-  { src: "/magnets/oslo-viking.webp", alt: "A cast metal Viking medallion magnet from Oslo", left: 51, top: 50, width: 26, rotate: 1 },
+  { src: "/magnets/oslo-viking.webp", alt: "A cast metal Viking medallion magnet from Oslo", left: 32, top: 16, width: 20, rotate: 1 },
+  { src: "/magnets/oslo-plate.webp", alt: "An Oslo souvenir number plate magnet", left: 65, top: 12, width: 23, rotate: -5.4 },
+  { src: "/magnets/vienna.webp", alt: "A yellow “No Kangaroos in Austria” road sign magnet from Vienna", left: 46, top: 25, width: 16, rotate: 2.2 },
+  { src: "/magnets/berlin.webp", alt: "A round SDD Berlin badge magnet", left: 72, top: 25, width: 16, rotate: -4 },
+  { src: "/magnets/prague.webp", alt: "A Prague souvenir number plate magnet", left: 67, top: 36, width: 20, rotate: 0.1 },
 ];
 
-/** The magnets lifted off the door and shown as objects either side. */
+/** The magnets lifted off the door and shown as objects either side. Four
+ *  different ones — a medallion, a plate, a badge and a road sign — so the pair
+ *  either side reads as a collection rather than one magnet duplicated. */
 const FLOATING = {
-  farLeft: { src: "/magnets/vienna.webp", alt: "A “No Kangaroos in Austria” magnet from Vienna", city: "Vienna" },
-  left: { src: "/magnets/prague.webp", alt: "A Prague souvenir number plate magnet", city: "Prague" },
-  right: { src: "/magnets/oslo-plate.webp", alt: "An Oslo souvenir number plate magnet", city: "Oslo" },
-  farRight: { src: "/magnets/oslo-viking.webp", alt: "A cast metal Viking medallion magnet from Oslo", city: "Oslo" },
+  farLeft: { src: "/magnets/vienna.webp", alt: "A “No Kangaroos in Austria” magnet from Vienna" },
+  left: { src: "/magnets/oslo-viking.webp", alt: "A cast metal Viking medallion magnet from Oslo" },
+  right: { src: "/magnets/oslo-plate.webp", alt: "An Oslo souvenir number plate magnet" },
+  farRight: { src: "/magnets/berlin.webp", alt: "A round SDD Berlin badge magnet" },
 };
 
 /**
- * A magnet shown as an object on a card.
+ * A magnet floating on the page, as an object rather than a picture of one.
  *
- * The card is fridge-door cream rather than the page's dark surface: these are
- * cutouts with real transparency, and a pale ground is what makes a souvenir
- * magnet read as one instead of dissolving into the background.
+ * No card, no frame, no backdrop — the cutout's own silhouette is the shape,
+ * which is the whole point of the background removal, and a drop-shadow filter
+ * follows that silhouette instead of a bounding box. An earlier version sat
+ * these on cream cards; the cards turned the objects into stamps in a field and
+ * are gone.
  */
-function MagnetCard({
+function FloatingMagnet({
   src,
   alt,
   className = "",
@@ -72,42 +76,23 @@ function MagnetCard({
   style?: React.CSSProperties;
 }) {
   return (
-    <figure
-      className={`overflow-hidden rounded-[1.75rem] border border-white/10 p-3.5 ${className}`}
-      style={{
-        background: "linear-gradient(160deg, var(--skin-steel-a), var(--skin-steel-b))",
-        boxShadow: "0 30px 60px -20px rgba(0,0,0,0.7)",
-        ...style,
-      }}
-    >
-      <img
-        src={src}
-        alt={alt}
-        loading="lazy"
-        decoding="async"
-        draggable={false}
-        className="h-full w-full select-none object-contain"
-      />
-    </figure>
+    <img
+      src={src}
+      alt={alt}
+      loading="lazy"
+      decoding="async"
+      draggable={false}
+      className={`absolute select-none object-contain ${className}`}
+      style={{ filter: "drop-shadow(0 26px 30px rgba(0,0,0,0.65))", ...style }}
+    />
   );
 }
 
-/** Small location tag, as the map's pins are labelled. */
-function CityPill({ city, className = "" }: { city: string; className?: string }) {
-  return (
-    <span
-      className={`inline-flex items-center gap-1.5 rounded-full bg-white px-3.5 py-2 text-[#171717] shadow-lg ${className}`}
-    >
-      <MapPin size={15} strokeWidth={2.5} className="text-primary" />
-      <span className="font-medium leading-none">{city}</span>
-    </span>
-  );
-}
-
-/** Half the phone's width plus a comfortable gap — the closest an inner card
- *  may come to the page centre. Kept in px, not a percentage, so it doesn't
- *  drift into the phone as the viewport narrows. */
-const PHONE_CLEARANCE = "182px";
+/** Half the phone's width plus a gap — the closest a flanking magnet may come
+ *  to the page centre. Kept in px, not a percentage, because a percentage
+ *  scales with the viewport while the phone does not: as a percentage these
+ *  slid straight over the phone at 768px and covered its header. */
+const PHONE_CLEARANCE = "164px";
 
 /** The phone, with the fridge screen inside it. */
 function PhoneMock() {
@@ -147,7 +132,7 @@ function PhoneMock() {
                   left: `${m.left}%`,
                   top: `${m.top}%`,
                   width: `${m.width}%`,
-                  transform: `rotate(${m.rotate}deg)`,
+                  transform: `translate(-50%, -50%) rotate(${m.rotate}deg)`,
                   filter: "drop-shadow(0 6px 7px rgba(0,0,0,0.28))",
                 }}
               />
@@ -163,80 +148,48 @@ function PhoneMock() {
 
 export function FridgeShowcase() {
   return (
-    <section className="relative overflow-hidden px-5 pb-20 md:px-8 md:pb-28">
-      {/* ── Decorative ground ──
-          A warm sweep behind the phone, echoing the Welcome screen's aurora, so
-          the composition has a middle ground between the dark page and the
-          product. Purely ornamental: aria-hidden and non-interactive. */}
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0">
-        <div
-          className="absolute inset-x-0 top-1/2 h-[520px] -translate-y-1/2"
-          style={{
-            background:
-              "radial-gradient(60% 50% at 50% 50%, rgba(244,97,0,0.22) 0%, rgba(244,97,0,0.07) 45%, rgba(244,97,0,0) 72%)",
-          }}
-        />
-        {/* Heavily blurred, because an un-blurred stroke this wide reads as a
-            muddy brown stripe across the section rather than as light. */}
-        <svg
-          viewBox="0 0 1200 520"
-          preserveAspectRatio="xMidYMid slice"
-          className="absolute inset-x-0 top-1/2 h-[520px] w-full -translate-y-1/2"
-          style={{ filter: "blur(46px)" }}
-        >
-          <path
-            d="M-60 380 C 220 160, 400 460, 620 300 S 1000 120, 1260 250"
-            fill="none"
-            stroke="var(--primary)"
-            strokeWidth="96"
-            strokeLinecap="round"
-            opacity="0.13"
-          />
-        </svg>
-      </div>
-
-      <div className="relative mx-auto flex max-w-6xl items-center justify-center">
+    /* No horizontal padding and overflow-hidden: the outermost magnets are meant
+       to run off the page and be cropped by its edge, which needs the flanking
+       tracks to reach the viewport rather than stopping at a centred container.
+       The phone is a fixed width and centres itself, so it needs no gutter. */
+    <section className="relative overflow-hidden pb-20 md:pb-28">
+      <div className="relative flex w-full items-center justify-center">
         {/* ── Flanking magnets ──
-            Anchored a fixed distance from the page centre rather than by a
-            percentage of the half-width, because a percentage scales with the
-            viewport while the phone does not: at 768px the cards slid straight
-            over the phone and covered its header. PHONE_CLEARANCE is half the
-            phone plus a gap, so the inner cards can never reach it.
+            Bare cutouts on the page, not pictures in frames.
 
-            Only from lg, and the half-cropped outer pair only from xl — below
-            that there is genuinely no room beside a 292px phone. */}
+            Inner ones are anchored a fixed number of pixels from the centre
+            (PHONE_CLEARANCE) rather than by a percentage of the half-width: a
+            percentage scales with the viewport while the phone does not, and at
+            768px that put them straight over the phone's header. Outer ones ARE
+            positioned by percentage, because those are supposed to track the
+            page edge and be cropped by it.
+
+            Hidden below lg — there is no room beside a 292px phone. */}
         <div aria-hidden="true" className="pointer-events-none absolute inset-y-0 left-0 hidden w-1/2 lg:block">
-          <MagnetCard
+          <FloatingMagnet
             {...FLOATING.left}
-            className="absolute top-[7%] h-[180px] w-[215px] xl:h-[205px] xl:w-[240px]"
-            style={{ right: PHONE_CLEARANCE, transform: "rotate(5deg)" }}
+            className="top-1/2 h-[180px] w-[180px] xl:h-[215px] xl:w-[215px]"
+            style={{ right: PHONE_CLEARANCE, transform: "translateY(-50%) rotate(-6deg)" }}
           />
-          {/* Half off the page edge, as the reference crops its outermost card. */}
-          <MagnetCard
+          <FloatingMagnet
             {...FLOATING.farLeft}
-            className="absolute left-[-5%] top-[40%] hidden h-[165px] w-[140px] xl:block"
-            style={{ transform: "rotate(-9deg)" }}
+            className="left-[-9%] top-[52%] h-[165px] w-[165px] xl:h-[195px] xl:w-[195px]"
+            style={{ transform: "translateY(-50%) rotate(-11deg)" }}
           />
         </div>
 
         <PhoneMock />
 
-        <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-1/2 lg:block">
-          <div className="absolute top-[9%]" style={{ left: PHONE_CLEARANCE }}>
-            <MagnetCard
-              {...FLOATING.right}
-              aria-hidden="true"
-              className="h-[180px] w-[215px] xl:h-[205px] xl:w-[240px]"
-              style={{ transform: "rotate(-5deg)" }}
-            />
-            {/* Tagged like a map pin, to tie the object back to a place. */}
-            <CityPill city={FLOATING.right.city} className="absolute -right-3 -top-4" />
-          </div>
-          <MagnetCard
+        <div aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-0 hidden w-1/2 lg:block">
+          <FloatingMagnet
+            {...FLOATING.right}
+            className="top-1/2 h-[150px] w-[215px] xl:h-[175px] xl:w-[250px]"
+            style={{ left: PHONE_CLEARANCE, transform: "translateY(-50%) rotate(5deg)" }}
+          />
+          <FloatingMagnet
             {...FLOATING.farRight}
-            aria-hidden="true"
-            className="absolute right-[-5%] top-[42%] hidden h-[165px] w-[145px] xl:block"
-            style={{ transform: "rotate(8deg)" }}
+            className="right-[-9%] top-[54%] h-[165px] w-[165px] xl:h-[195px] xl:w-[195px]"
+            style={{ transform: "translateY(-50%) rotate(9deg)" }}
           />
         </div>
       </div>
