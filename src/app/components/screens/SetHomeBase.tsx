@@ -56,9 +56,15 @@ export function SetHomeBase() {
     }
   }
 
-  async function pickPoint(lat: number, lng: number) {
-    const { city, country } = await reverseGeocode(lat, lng);
-    setPick({ lat, lng, label: `${city}, ${country}` });
+  function pickPoint(lat: number, lng: number) {
+    // Null only if the built-in city list is empty (it isn't), but fall back to
+    // coordinates rather than rendering "undefined, undefined" if it ever is.
+    const place = reverseGeocode(lat, lng);
+    setPick({
+      lat,
+      lng,
+      label: place ? `${place.city}, ${place.country}` : `${lat.toFixed(2)}, ${lng.toFixed(2)}`,
+    });
   }
 
   return (

@@ -89,6 +89,7 @@ export function MapScreen() {
             profile: {
               id: profile.id,
               name: profile.name,
+              email: profile.email,
               homeLat: profile.homeLat,
               homeLng: profile.homeLng,
               homeLabel: profile.homeLabel,

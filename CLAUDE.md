@@ -40,20 +40,39 @@ code looks right".
 | Route exit transitions | ✅ A/B against a build of `main`, DOM sampled every 60ms: old screen holds t=61→301ms, new screen mounts at t=362ms on both |
 | **Anything on a real Android device** | ❌ **never** |
 | **A real signed-in session end to end** | ❌ never — no credentials. Every success path that needs auth (saving a magnet, the WebP upload actually reaching Storage, onboarding) is still unexercised |
-| **Types** | ⚠️ no `tsconfig.json`, `typescript` not a dependency. A throwaway full-strict run found 7 errors, all pre-existing on `main` — see open issue 7 |
+| **Types** | ✅ `npm run typecheck` works and **passes clean** under full `strict`. `typescript` + React types are devDependencies and `tsconfig.json` is checked in |
 
 ---
 
 ## Open issues, highest value first
 
-1. **Trip photos are base64 in the DB.** One row is **7.5 MB**. `getPublicFridges`
-   no longer fetches them, but `getMagnets` and `getFridge` still do — so that
-   magnet's owner re-downloads 7.5 MB every time they open their own fridge.
-   The real fix is moving them to Supabase Storage like the cutouts. Needs a
-   migration for existing rows.
-2. **Fridge overflows the bottom nav by ~200px** (194 Pixel 7 / 245 Galaxy S8).
-   The base of the appliance is cut off. A fix was written and then reverted by
-   request — the tradeoff is a narrower fridge (317px of 412px) to fit it whole.
+1. **Trip photos — code done, migration still to run.** New trip photos go to
+   Supabase Storage (`magnet-photos/<userId>/<magnetId>-trip.<ext>`, same bucket
+   and prefix as the cutouts, so no new bucket or RLS policy). **The 3 legacy
+   rows are still base64** until you run the backfill:
+
+   ```
+   node scripts/check-trip-photos.mjs                    # read-only audit, anon key
+   SUPABASE_SERVICE_ROLE_KEY=... node scripts/migrate-trip-photos.mjs          # dry run
+   SUPABASE_SERVICE_ROLE_KEY=... node scripts/migrate-trip-photos.mjs --apply
+   ```
+
+   It needs the service-role key because the rows span three users and RLS
+   blocks the anon key. Idempotent, and it confirms each upload is publicly
+   readable before repointing the row. Current state: 17 magnets, 3 with a trip
+   photo, `select("*")` over all of them = **7.65 MB**; user `40f5b3ca`
+   downloads **7.41 MB** per fridge open.
+
+   Note the migration moves bytes verbatim — it does not re-encode. The Berlin
+   photo stays a 5.6 MB JPEG object; the win is that it leaves the row, so it's
+   fetched only when the story viewer opens it.
+2. ~~**Fridge overflows the bottom nav by ~200px.**~~ **Fixed.** FridgeAppliance
+   measures its available box (ResizeObserver) and fits the 400×950 illustration
+   inside it, minus the shared `BOTTOM_NAV_H`. Measured flush on Pixel 7 (315×747),
+   Pixel 7 with chrome (279×662), Galaxy S8 (241×572), iPhone SE (210×499) and the
+   desktop frame (297×706). The accepted tradeoff is the narrower fridge.
+   There is no pure-CSS form of this — `aspect-ratio` + `max-height` clamps the
+   height without narrowing the width, which breaks the ratio.
 3. **Fridge id space is 10,000.** `abs(hash) % 10000` → ~50% chance of a
    collision at ~118 users, and a collision makes one fridge unreachable.
    Measured 2026-09-17: 15 public profiles, 15 distinct ids, **0 collisions** —
@@ -70,23 +89,28 @@ code looks right".
 6. **`ScreenHeading` is `text-[#171717]`** — byte-identical to `--background`, so
    the "Set your home base" title is dark-on-dark. Fix was written then reverted
    along with the glass bar.
-7. **No typecheck in the repo.** The build uses esbuild, which strips types
-   without checking them; there is no `tsconfig.json` and `typescript` is not a
-   dependency, so `npm run typecheck` cannot run.
+7. ~~**No typecheck.**~~ **Done.** `typescript`, `@types/react` and
+   `@types/react-dom` are devDependencies, `tsconfig.json` is checked in, and
+   `npm run typecheck` passes clean under full `strict`. **Keep it passing** —
+   the build strips types without checking them, so this command is the only
+   thing that ever reads them.
 
-   A throwaway full-strict `tsc --noEmit` during the merge review found exactly
-   **7 errors, all pre-existing** (the identical set appears on `main`). Two are
-   real latent bugs, the rest are cosmetic:
+   The 7 errors it originally surfaced (the identical set was on `main`, so the
+   landing/perf branch added none) are all fixed:
 
-   - `AddMagnet.tsx` / `SetHomeBase.tsx` destructure `reverseGeocode()`'s result
-     without a null check — **it returns `{city,country} | null`, so a failed
-     geocode is a `TypeError` at runtime.** The genuine bug of the seven.
-   - `session.tsx` passes `store.signInWithGoogle()` (which returns `void`,
-     being a redirect flow) into `loadFor(p: Profile | null)`, so `profile`
-     briefly becomes `undefined` rather than `null`. Harmless today because the
-     page is navigating away, and `!profile` still reads as signed-out.
-   - `MapScreen.tsx` builds a display-only `Profile` without `email`.
-   - `main.tsx` imports with an explicit `.tsx` extension — config, not code.
+   - `AddMagnet.tsx` / `SetHomeBase.tsx` destructured `reverseGeocode()`'s
+     result without a null check. **Correction to an earlier note in this file
+     that called this a live crash: it isn't.** `CITIES` is a hardcoded
+     193-entry literal, so the `null` branch is unreachable today. The call
+     sites are guarded anyway, so it stays safe if that list ever becomes
+     data-loaded.
+   - `session.tsx` passed `store.signInWithGoogle()` (`void`, being a redirect
+     flow) into `loadFor(p: Profile | null)`, setting `profile` to `undefined`
+     rather than `null`. Now it just calls it; the profile arrives via
+     `onAuthStateChange` on the way back.
+   - `MapScreen.tsx` built a display-only `Profile` without `email`.
+   - `main.tsx` imports with an explicit `.tsx` extension — handled with
+     `allowImportingTsExtensions` rather than churning the source.
 
 ---
 
@@ -148,6 +172,29 @@ render inside the 402pt phone frame.**
   look broken. Pin the progress value directly instead.
 - **Freeze CSS animations** for screenshots with a negative `animation-delay`
   plus `animation-play-state: paused`.
+- **`PhoneFrame` renders `children` TWICE** — once in the desktop branch
+  (`hidden md:block`) and once in the mobile one (`md:hidden`). A bare
+  `document.querySelector` finds the *hidden* copy first and every rect reads 0,
+  which looks exactly like a collapsed layout. Scope queries to whichever branch
+  has `display !== 'none'`.
+- **`Emulation.setDeviceMetricsOverride` did not drive the `md:` breakpoint** in
+  headless Chrome here — the desktop branch kept rendering at a 360px override,
+  so the app was measured in its 402pt frame while the numbers claimed a phone.
+  The fixed-width **iframe** is what actually works (as noted above). Confirm
+  you're in the right branch before trusting any measurement.
+- **A probe page must import `src/styles/index.css`**, not `theme.css`.
+  `index.css` is what pulls in Tailwind; import `theme.css` alone and every
+  class silently does nothing — `getComputedStyle` reports `display: block`
+  everywhere and the layout looks broken in a very convincing way.
+- **Check your selector still matches after a refactor.** A nav probe keyed on
+  `h-20` silently stopped matching when that became an inline style, and the
+  overflow measurement fell back to the viewport bottom — reporting "fits" for
+  the wrong reason.
+- **`Prefer: count=exact` makes PostgREST return `206`, not `200`.** A
+  `status !== 200` guard rejects perfectly good responses.
+- **`Network.responseReceived`'s `encodedDataLength` is headers-only.** Byte
+  totals gathered there are nonsense; the URL list is still reliable, and real
+  sizes come from the build output or `Network.loadingFinished`.
 - **Element ids built from display labels break `url(#…)`** — spaces and colons
   in an id silently kill SVG `clipPath`/gradient references.
 

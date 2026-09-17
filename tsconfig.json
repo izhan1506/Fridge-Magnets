@@ -1,0 +1,40 @@
+{
+  // Type-checking only. Vite/esbuild does the transform and strips types
+  // WITHOUT checking them, so `npm run typecheck` is the only thing that ever
+  // looks at them — hence noEmit, and hence it needs to stay passing.
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "types": ["vite/client"],
+
+    "noEmit": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": false,
+
+    // src/main.tsx imports "./app/App.tsx" with the extension, which is what
+    // the Vite/Figma scaffold emitted. Allowed rather than rewritten so this
+    // config doesn't force a source change to adopt.
+    "allowImportingTsExtensions": true,
+
+    "strict": true,
+    "noFallthroughCasesInSwitch": true,
+    "forceConsistentCasingInFileNames": true,
+
+    // Deliberately off: the codebase has a lot of scaffolded UI components with
+    // unused imports/vars, and turning these on would bury the errors that
+    // matter under hundreds that don't. Worth revisiting after a cleanup pass.
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+
+    "baseUrl": ".",
+    "paths": { "@/*": ["./src/*"] }
+  },
+  "include": ["src"]
+}

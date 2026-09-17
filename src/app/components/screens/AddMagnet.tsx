@@ -81,9 +81,15 @@ export function AddMagnet() {
       async (pos) => {
         const c = { lat: pos.coords.latitude, lng: pos.coords.longitude };
         setCoords(c);
-        const { city, country } = await reverseGeocode(c.lat, c.lng);
-        setCity(city);
-        setCountry(country);
+        // reverseGeocode is a nearest-match against a built-in city list and is
+        // typed to return null if that list is ever empty. It never is today,
+        // but destructuring it unguarded would be a TypeError the day it is —
+        // and the user can type the city themselves, so don't block on it.
+        const place = reverseGeocode(c.lat, c.lng);
+        if (place) {
+          setCity(place.city);
+          setCountry(place.country);
+        }
         setStep("camera");
       },
       () => setStep("gps-denied"),

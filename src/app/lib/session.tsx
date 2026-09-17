@@ -140,7 +140,12 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         await loadFor(await store.signIn(email, password));
       },
       async signInWithGoogle() {
-        await loadFor(await store.signInWithGoogle());
+        /* Redirect flow: this navigates away and resolves no profile, so there
+           is nothing to load here. The profile arrives on the way back, via the
+           onAuthStateChange subscription above. Passing its void result into
+           loadFor() used to set `profile` to undefined instead of null —
+           harmless only because the page was already leaving. */
+        await store.signInWithGoogle();
       },
       async signOut() {
         await store.signOut();
