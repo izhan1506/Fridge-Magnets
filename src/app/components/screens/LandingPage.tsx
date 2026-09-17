@@ -1,9 +1,7 @@
-import { useMemo, useRef, useState, type ReactNode } from "react";
+import { type ReactNode } from "react";
 import { Link, useNavigate } from "react-router";
-import { Search } from "lucide-react";
 import { HeroMatchCut, HERO_SHOTS } from "../hero-stack";
-import { M3Button, SearchBar } from "../design-system";
-import { searchCities } from "../../lib/geo";
+import { M3Button } from "../design-system";
 
 /**
  * Public marketing page at /landingpage. Rendered full-bleed, outside
@@ -61,92 +59,6 @@ function MagnetGlyph() {
         />
       </span>
     </span>
-  );
-}
-
-/**
- * City search over the real built-in city list (192 cities, geo.ts) — the same
- * data that powers home-base onboarding, so the suggestions are the actual
- * places you can pin a fridge to, not decoration.
- *
- * The map itself is behind an account, so choosing a city hands off to signup.
- * That's the honest ceiling for a public page: it proves the list is real and
- * gets out of the way.
- */
-function CitySearch() {
-  const nav = useNavigate();
-  const [query, setQuery] = useState("");
-  const [open, setOpen] = useState(false);
-  const blurTimer = useRef<number | null>(null);
-
-  const results = useMemo(
-    () => (query.trim().length > 1 ? searchCities(query).slice(0, 6) : []),
-    [query],
-  );
-  const showResults = open && results.length > 0;
-
-  return (
-    <div className="relative mx-auto w-full max-w-[34rem]">
-      <div className="relative">
-        {/* Design-system SearchBar, padded on the right to seat the button
-            inside the field rather than beside it. */}
-        <SearchBar
-          value={query}
-          onChange={(e) => {
-            setQuery(e.target.value);
-            setOpen(true);
-          }}
-          onFocus={() => setOpen(true)}
-          onBlur={() => {
-            // Deferred so a mousedown on a suggestion still registers.
-            blurTimer.current = window.setTimeout(() => setOpen(false), 120);
-          }}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") nav("/auth");
-            if (e.key === "Escape") setOpen(false);
-          }}
-          placeholder="Search a city — Tokyo, Lisbon, Karachi"
-          aria-label="Search for a city"
-          /* Right padding reserves the button's footprint so the placeholder
-             and the typed value never run underneath it. Two values because
-             the button loses its label on small screens. */
-          className="!h-14 !rounded-full !pl-5 !pr-[4.25rem] sm:!pr-[8rem]"
-        />
-        <M3Button
-          onClick={() => nav("/auth")}
-          icon={<Search size={18} />}
-          aria-label="Search"
-          className="absolute right-1.5 top-1.5 !h-11 !rounded-full !px-3.5 sm:!px-5"
-        >
-          {/* Icon-only below sm — there isn't room for both the label and a
-              readable placeholder on a 360px screen. */}
-          <span className="hidden sm:inline">Search</span>
-        </M3Button>
-      </div>
-
-      {showResults && (
-        <ul
-          className="absolute inset-x-0 top-[calc(100%+0.5rem)] z-20 overflow-hidden rounded-2xl border border-border bg-card py-1.5 text-left shadow-xl"
-          onMouseEnter={() => {
-            if (blurTimer.current) window.clearTimeout(blurTimer.current);
-          }}
-        >
-          {results.map((c) => (
-            <li key={`${c.city}-${c.country}`}>
-              <button
-                // mousedown, not click: the input's blur would otherwise close
-                // the list before a click ever lands.
-                onMouseDown={() => nav("/auth")}
-                className="flex w-full items-baseline gap-2 px-5 py-2.5 text-left transition hover:bg-white/5"
-              >
-                <span>{c.city}</span>
-                <span className="text-muted-foreground">{c.country}</span>
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
   );
 }
 
@@ -271,28 +183,32 @@ export function LandingPage() {
           centred in whatever space the side groups leave over. The nav links
           are anchors to sections that genuinely exist further down. */}
       <header className="sticky top-0 z-30 border-b border-border/50 bg-background/80 backdrop-blur-[10px]">
-        {/* Mobile is a two-track flex row with the wordmark on the left: the
-            three-track centred layout only works once the side groups are
-            roughly even, and below lg the action group is far wider than the
-            (empty) link track, which shoves the wordmark off centre and wraps
-            both labels. The switch is at lg, not md: at exactly 768px the four
-            links plus the actions overflow the page by 8px. From lg up the
-            links appear and the wordmark centres on the page rather than in
-            whatever space the side groups leave over. */}
+        {/* Below lg this collapses to a two-track flex row — wordmark left,
+            actions right, links hidden — because there is no room for the link
+            group. The switch is at lg, not md: at exactly 768px the four links
+            plus the actions overflow the page by 8px. */}
         <nav className="mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-5 py-4 md:px-8 lg:grid lg:grid-cols-[1fr_auto_1fr] lg:gap-4">
-          <div className="hidden items-center gap-7 text-muted-foreground lg:flex">
+          {/* A step down below sm: "My Fridge Tales" plus "Log in" plus the
+              pill overflows a 360px screen by 3px at text-xl. */}
+          <Link to="/landingpage" className="font-fridge whitespace-nowrap text-lg leading-none sm:text-xl lg:justify-self-start">
+            My Fridge Tales
+          </Link>
+
+          {/* Centred on the page, not in the leftover space: the two outer
+              tracks are both 1fr, so the auto middle track lands on the page's
+              centre line regardless of how wide the wordmark or actions are. */}
+          <div className="hidden items-center gap-7 text-muted-foreground lg:flex lg:justify-self-center">
             <a href="#how" className="whitespace-nowrap transition hover:text-foreground">How it works</a>
             <a href="#map" className="whitespace-nowrap transition hover:text-foreground">The map</a>
             <a href="#why" className="whitespace-nowrap transition hover:text-foreground">Why it's different</a>
             <Link to="/casestudy" className="whitespace-nowrap transition hover:text-foreground">Case study</Link>
           </div>
 
-          <Link to="/landingpage" className="font-fridge text-xl leading-none lg:justify-self-center">
-            Fridge
-          </Link>
-
           <div className="flex items-center gap-1 lg:justify-self-end lg:gap-4">
-            <Link to="/auth" className="whitespace-nowrap px-2 py-1 transition hover:text-primary">
+            {/* Below 360px the longer wordmark, "Log in" and the pill can't all
+                fit. The pill wins: /auth handles signing in as well as signing
+                up, so nothing becomes unreachable. */}
+            <Link to="/auth" className="whitespace-nowrap px-2 py-1 transition hover:text-primary max-[359px]:hidden">
               Log in
             </Link>
             <M3Button
@@ -310,7 +226,10 @@ export function LandingPage() {
           (Welcome screen), and the photo panel is the match cut: one fridge,
           eight places, cutting on the object. */}
       <section className="mx-auto w-full max-w-6xl px-5 pt-16 pb-20 text-center md:px-8 md:pt-24 md:pb-28">
-        <h1 className="mx-auto max-w-4xl font-fridge text-[3.25rem] leading-[0.94] tracking-tight sm:text-7xl md:text-8xl">
+        {/* 30% down from 52/72/96px. Kept as explicit values rather than
+            snapping to Tailwind's scale, which has nothing within 7% of the
+            large end. */}
+        <h1 className="mx-auto max-w-4xl font-fridge text-[2.275rem] leading-[0.94] tracking-tight sm:text-[3.15rem] md:text-[4.2rem]">
           Turn your travels
           <br />
           into <MagnetGlyph /> <span className="text-primary">tales</span>
@@ -321,8 +240,16 @@ export function LandingPage() {
           travelers on the map.
         </p>
 
-        <div className="mt-9">
-          <CitySearch />
+        {/* Primary sends you into the product; secondary is the case study,
+            which is the one other thing a first-time visitor might actually
+            want. Stacked full-width on mobile so neither is a small target. */}
+        <div className="mt-9 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
+          <M3Button onClick={() => nav("/auth")} className="!rounded-full sm:!px-8">
+            Start collecting
+          </M3Button>
+          <M3Button variant="tonal" onClick={() => nav("/casestudy")} className="!rounded-full sm:!px-8">
+            Case study
+          </M3Button>
         </div>
 
         <HeroMatchCut className="mt-14 md:mt-16" />
@@ -440,7 +367,7 @@ export function LandingPage() {
         {/* ── Footer ── */}
         <footer className="flex flex-col gap-6 border-t border-border/60 py-12 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="font-fridge text-2xl">Fridge</p>
+            <p className="font-fridge text-2xl">My Fridge Tales</p>
             <p className="mt-1 text-muted-foreground">Turn your travels into tales.</p>
           </div>
           <div className="flex flex-wrap gap-x-7 gap-y-2 text-muted-foreground">
