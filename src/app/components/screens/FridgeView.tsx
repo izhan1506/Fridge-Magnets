@@ -13,12 +13,13 @@ import { StoryViewer } from "../story-viewer";
  * positions — stored as fractions [0,1] of that box — are scale-invariant and
  * land on the door face whatever size the appliance renders at.
  *
- * The constants below are NOT the on-screen size. FridgeAppliance now measures
- * its available space and fits the illustration to it (so the whole appliance
- * clears the bottom nav), which means the real width is smaller than this and
- * varies by device. These are only used to turn a random pixel spot into a
- * fraction in placeMagnets(), where all that matters is the aspect ratio — so a
- * nominal reference size is fine. Don't use them to position anything. */
+ * The constants below are NOT the on-screen size. APPLIANCE_W derives from the
+ * hardcoded 402pt DEVICE_W while FridgeAppliance actually renders the
+ * illustration at `w-full` (capped at 440px), so the two disagree on any screen
+ * that isn't 402px wide, and the error grows with width. It doesn't matter here:
+ * these are only used to turn a random pixel spot into a fraction in
+ * placeMagnets(), where all that matters is the aspect ratio. Don't use them to
+ * position anything. */
 const MAGNET_SIZE = 120; // base tile side, px (a magnet's scale multiplies this)
 /** Nominal reference width only — see the note above. */
 const APPLIANCE_W = Math.min(DEVICE_W - 16, 440);

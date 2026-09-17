@@ -1,76 +1,37 @@
-import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { type ReactNode } from "react";
 import { motion } from "motion/react";
 import type { Magnet } from "../lib/types";
 import { MAGNET_COLORS, DOOR_ZONE } from "../lib/skins";
 import { FridgeIllustration } from "./fridge-illustration";
-import { BOTTOM_NAV_H } from "./layout";
 import { ImageWithFallback } from "./figma/ImageWithFallback";
-
-/** The illustration's viewBox, and so the aspect ratio it must keep. */
-const ILLO_W = 400;
-const ILLO_H = 950;
-/** The illustration never renders wider than this, however much room there is. */
-const ILLO_MAX_W = 440;
 
 /**
  * The app's one fridge appliance, standing on the sunset wall. Magnets are
  * scattered inside the door zone via `children`; `overlay` (e.g. the empty
  * state) is centered on the fridge itself, not the offset door zone.
+ *
+ * ⚠️ The appliance is sized by WIDTH and deliberately overflows the bottom of
+ * the screen. The illustration is 2.375× taller than it is wide, so at
+ * `w-full` it is taller than the viewport once the 88px header and the 80px
+ * bottom nav are accounted for, and the base of the fridge is cut off —
+ * measured at 194px past the nav on a Pixel 7, 245px on a Galaxy S8.
+ *
+ * This is a known, accepted tradeoff, not an oversight. A version that fits the
+ * whole appliance on screen has been written and **reverted twice by request**
+ * (2026-08, and again 2026-09-17): fitting it whole means deriving the width
+ * from the available height, which shrinks the fridge to ~315px of a 412px
+ * Pixel 7 and leaves large empty margins either side. A big fridge that runs
+ * off the bottom is preferred to a small one that doesn't.
+ *
+ * Don't "fix" this again without asking first.
  */
 export function FridgeAppliance({ children, overlay }: { children: ReactNode; overlay?: ReactNode }) {
-  /* ── Why this is measured rather than expressed in CSS ──
-     The illustration is a 400×950 box: 2.375× taller than it is wide. Rendered
-     at `w-full` it came out 396×941 on a 412px phone, which is taller than the
-     entire viewport before the 88px header and the 80px nav are taken off — so
-     the base of the appliance was cut off, by a measured 194px on a Pixel 7 and
-     245px on a Galaxy S8.
-
-     Fitting a fixed-ratio box inside a bounded parent has no reliable pure-CSS
-     form for a plain div: `aspect-ratio` with `max-height` clamps the height
-     without narrowing the width, which just breaks the ratio (402×706 instead
-     of 297×706 in the desktop frame). So the available box is measured and the
-     width is derived from it. That also removes the old disagreement where the
-     door-zone geometry assumed a hardcoded 402pt frame while the illustration
-     actually rendered `w-full`.
-
-     The tradeoff is a narrower fridge — ~317px of a 412px Pixel 7 — which is
-     the cost of showing the whole appliance instead of most of it. */
-  const availableRef = useRef<HTMLDivElement>(null);
-  const [illoW, setIlloW] = useState<number | null>(null);
-
-  useLayoutEffect(() => {
-    const el = availableRef.current;
-    if (!el) return;
-
-    const measure = () => {
-      const { width, height } = el.getBoundingClientRect();
-      if (!width || !height) return;
-      // Contain: as wide as fits, but never so wide that it overflows vertically.
-      setIlloW(Math.min(width, ILLO_MAX_W, (height * ILLO_W) / ILLO_H));
-    };
-
-    measure();
-    const observer = new ResizeObserver(measure);
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
-
   return (
-    /* pb clears the bottom nav, which is `absolute` and so contributes nothing
-       to this column's height — the measured box has to exclude it explicitly. */
-    <div
-      className="flex min-h-0 flex-1 items-start justify-center overflow-visible px-2"
-      style={{ paddingBottom: BOTTOM_NAV_H }}
-    >
-      {/* Fills the available content box; this is what gets measured. */}
-      <div ref={availableRef} className="flex h-full w-full items-start justify-center">
-        {/* Exactly the illustration's rendered bounds, so DOOR_ZONE's
-            percentages still address the door face correctly. Hidden until
-            measured, so the oversized first paint is never shown. */}
-        <div
-          className="relative"
-          style={{ width: illoW ?? undefined, visibility: illoW ? "visible" : "hidden" }}
-        >
+    /* items-start, not items-center: the illustration is taller than this box on
+       most phones, and centering made it overflow *upwards* too — bleeding out
+       from under the screen header. Top-aligned it only ever runs off the bottom. */
+    <div className="flex min-h-0 flex-1 items-start justify-center overflow-visible px-2">
+      <div className="relative w-full max-w-[440px]">
         <FridgeIllustration className="pointer-events-none w-full select-none" />
         {/* magnet placement canvas (percentages of the image box) — a bounded box
             so magnets can be freely positioned and dragged within the door face */}
@@ -90,7 +51,6 @@ export function FridgeAppliance({ children, overlay }: { children: ReactNode; ov
             {overlay}
           </div>
         )}
-        </div>
       </div>
     </div>
   );

@@ -66,13 +66,24 @@ code looks right".
    Note the migration moves bytes verbatim — it does not re-encode. The Berlin
    photo stays a 5.6 MB JPEG object; the win is that it leaves the row, so it's
    fetched only when the story viewer opens it.
-2. ~~**Fridge overflows the bottom nav by ~200px.**~~ **Fixed.** FridgeAppliance
-   measures its available box (ResizeObserver) and fits the 400×950 illustration
-   inside it, minus the shared `BOTTOM_NAV_H`. Measured flush on Pixel 7 (315×747),
-   Pixel 7 with chrome (279×662), Galaxy S8 (241×572), iPhone SE (210×499) and the
-   desktop frame (297×706). The accepted tradeoff is the narrower fridge.
-   There is no pure-CSS form of this — `aspect-ratio` + `max-height` clamps the
-   height without narrowing the width, which breaks the ratio.
+2. **Fridge overflows the bottom nav by ~200px — WON'T FIX. Do not "fix" this
+   again without asking.** The base of the appliance is cut off: measured 194px
+   past the nav on a Pixel 7, 279px with browser chrome, 245px on a Galaxy S8,
+   211px in the desktop frame.
+
+   A working fit has now been written and **reverted twice by request** — once
+   in 2026-08, and again on 2026-09-17. Both times the reason was the same: the
+   illustration is 2.375× taller than wide, so fitting it whole means deriving
+   its width from the available height, which shrinks it to ~315px of a 412px
+   Pixel 7 and leaves wide empty margins either side. **A big fridge that runs
+   off the bottom is preferred to a small one that fits.**
+
+   If it is ever revisited, the fix itself is known and is not the hard part
+   (see `f3dcb1e`, reverted in `HEAD`): measure the available box with a
+   ResizeObserver and derive the width, minus the shared `BOTTOM_NAV_H`. There
+   is no pure-CSS form — `aspect-ratio` + `max-height` clamps the height without
+   narrowing the width, which just breaks the ratio. The real fix is a shorter
+   fridge illustration, not a smaller one.
 3. **Fridge id space is 10,000.** `abs(hash) % 10000` → ~50% chance of a
    collision at ~118 users, and a collision makes one fridge unreachable.
    Measured 2026-09-17: 15 public profiles, 15 distinct ids, **0 collisions** —
@@ -118,7 +129,7 @@ code looks right".
 
 | Path | Auth | Notes |
 | --- | --- | --- |
-| `/landingpage`, `/landing` | public | Marketing. Full-bleed hero, hard-cutting photo stack |
+| `/landingpage`, `/landing` | public | Marketing. Wordmark "My Fridge Tales"; centred hero over a contained 16/9 match-cut photo panel |
 | `/casestudy`, `/case-study` | public | Product design case study |
 | `/designsystem` | public | Component showcase |
 | `/welcome`, `/auth` | public-only | Signed-in users get bounced to `/fridge` |
