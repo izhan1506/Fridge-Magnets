@@ -1,6 +1,7 @@
 import { type ReactNode } from "react";
 import { Link, useNavigate } from "react-router";
 import { HeroMatchCut, HERO_SHOTS } from "../hero-stack";
+import { FridgeShowcase } from "../fridge-showcase";
 import { M3Button } from "../design-system";
 
 /**
@@ -261,6 +262,9 @@ export function LandingPage() {
 
         <HeroMatchCut className="mt-8 md:mt-10" />
       </section>
+
+      {/* The product itself, straight after the pitch. */}
+      <FridgeShowcase />
 
       <div className="mx-auto w-full max-w-6xl px-5 md:px-8">
         {/* ── Stat strip ── */}
