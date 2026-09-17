@@ -243,7 +243,7 @@ export function LandingPage() {
         {/* Primary sends you into the product; secondary is the case study,
             which is the one other thing a first-time visitor might actually
             want. Stacked full-width on mobile so neither is a small target. */}
-        <div className="mt-9 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
+        <div className="mt-6 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
           <M3Button onClick={() => nav("/auth")} className="!rounded-full sm:!px-8">
             Start collecting
           </M3Button>
@@ -252,7 +252,7 @@ export function LandingPage() {
           </M3Button>
         </div>
 
-        <HeroMatchCut className="mt-14 md:mt-16" />
+        <HeroMatchCut className="mt-8 md:mt-10" />
       </section>
 
       <div className="mx-auto w-full max-w-6xl px-5 md:px-8">
