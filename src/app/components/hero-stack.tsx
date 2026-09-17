@@ -65,14 +65,32 @@ export function HeroStack() {
         }}
       />
 
+      {/* The fridge stands centre-frame in every shot, so the copy is anchored
+          to the middle rather than to the page gutters: the heading begins at
+          the fridge's right edge and the button ends at its left edge. */}
       <div className="absolute inset-0">
-        <div className="mx-auto flex h-full w-full max-w-6xl flex-col justify-end px-5 pb-14 md:grid md:grid-cols-12 md:items-center md:pb-0 md:px-8">
-          {/* Sits right of the fridge, which stands centre-frame in every shot. */}
-          <h1 className="font-fridge text-[12vw] uppercase leading-[0.95] text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.55)] sm:text-6xl md:col-span-6 md:col-start-7 md:text-7xl lg:text-8xl">
+        {/* Mobile: no room beside the fridge, so copy sits under it. */}
+        <div className="flex h-full flex-col justify-end px-5 pb-14 md:hidden">
+          <h1 className="font-fridge text-[11vw] leading-[1.02] text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.55)]">
             Turn your travels into tales
           </h1>
+          <div className="mt-7">
+            <M3Button onClick={() => nav("/auth")}>Make your fridge</M3Button>
+            <p className="mt-4 text-white/75 drop-shadow">
+              Free · works in your browser · no app store
+            </p>
+          </div>
+        </div>
 
-          <div className="mt-8 md:col-span-5 md:col-start-1 md:row-start-1 md:mt-0 md:self-end md:pb-24">
+        {/* Desktop: flanking the fridge. */}
+        <div className="hidden h-full md:block">
+          <div className="absolute inset-y-0 left-[59%] right-[5%] flex items-center">
+            <h1 className="font-fridge text-6xl leading-[1.02] text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.55)] lg:text-7xl xl:text-8xl">
+              Turn your travels into tales
+            </h1>
+          </div>
+
+          <div className="absolute bottom-[16%] left-[5%] right-[59%] flex flex-col items-end text-right">
             <M3Button onClick={() => nav("/auth")}>Make your fridge</M3Button>
             <p className="mt-4 text-white/75 drop-shadow">
               Free · works in your browser · no app store
@@ -80,6 +98,7 @@ export function HeroStack() {
           </div>
         </div>
       </div>
+
     </section>
   );
 }
