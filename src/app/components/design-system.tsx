@@ -1,7 +1,7 @@
 import { forwardRef, type ButtonHTMLAttributes, type InputHTMLAttributes, type ReactNode } from "react";
 import { Check, Search, Plus, CircleUserRound } from "lucide-react";
 import { motion, LayoutGroup } from "motion/react";
-
+import { BOTTOM_NAV_H } from "./layout";
 /**
  * ═══════════════════════════════════════════════════════════════════════════
  * FRIDGE MAGNETS DESIGN SYSTEM
@@ -330,7 +330,12 @@ interface BottomNavBarProps {
  */
 export function BottomNavBar({ value, onTabChange, onAdd }: BottomNavBarProps) {
   return (
-    <div className="absolute inset-x-0 bottom-0 z-10 flex h-20 items-center justify-center gap-3 bg-black/40 backdrop-blur-[13px]">
+    // Height comes from the shared BOTTOM_NAV_H so content that has to clear
+    // this bar measures the same number the bar actually renders at.
+    <div
+      className="absolute inset-x-0 bottom-0 z-10 flex items-center justify-center gap-3 bg-black/40 backdrop-blur-[13px]"
+      style={{ height: BOTTOM_NAV_H }}
+    >
       <GlassTabToggle value={value} onChange={onTabChange} />
       <GlassIconButton label="Add magnet" onClick={onAdd} />
     </div>

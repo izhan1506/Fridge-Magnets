@@ -9,11 +9,18 @@ import { DEVICE_W } from "../layout";
 import { StoryViewer } from "../story-viewer";
 
 /* ── Door canvas geometry ──
- * The app is fixed to the 402pt frame (layout.tsx); FridgeAppliance renders the
- * illustration at min(frame − 2×8px padding, 440px) wide, and the placement
- * canvas is a % sub-box of that (skins.ts DOOR_ZONE). So the canvas pixel size
- * is deterministic and matches the on-screen box exactly. */
+ * DOOR_ZONE (skins.ts) is a percentage sub-box of the illustration, so magnet
+ * positions — stored as fractions [0,1] of that box — are scale-invariant and
+ * land on the door face whatever size the appliance renders at.
+ *
+ * The constants below are NOT the on-screen size. FridgeAppliance now measures
+ * its available space and fits the illustration to it (so the whole appliance
+ * clears the bottom nav), which means the real width is smaller than this and
+ * varies by device. These are only used to turn a random pixel spot into a
+ * fraction in placeMagnets(), where all that matters is the aspect ratio — so a
+ * nominal reference size is fine. Don't use them to position anything. */
 const MAGNET_SIZE = 120; // base tile side, px (a magnet's scale multiplies this)
+/** Nominal reference width only — see the note above. */
 const APPLIANCE_W = Math.min(DEVICE_W - 16, 440);
 const ILLO_H = (APPLIANCE_W * 950) / 400; // illustration viewBox is 400×950
 const CANVAS_W = APPLIANCE_W * (DOOR_ZONE.width / 100);

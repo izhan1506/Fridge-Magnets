@@ -6,6 +6,16 @@ import { X, Wifi, BatteryFull, SignalHigh } from "lucide-react";
 export const DEVICE_W = 402;
 export const DEVICE_H = 874;
 
+/**
+ * Height of the floating bottom nav, px.
+ *
+ * The nav is `absolute bottom-0`, so it overlays content instead of taking part
+ * in the column layout — anything that must stay clear of it has to subtract
+ * this itself. Shared so the nav and the screens that dodge it can't drift
+ * apart: that drift is exactly why the fridge ran ~200px underneath it.
+ */
+export const BOTTOM_NAV_H = 80;
+
 /** iOS-style status bar (desktop/web only). Hidden on mobile. */
 function StatusBar() {
   return (
