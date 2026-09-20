@@ -1,6 +1,6 @@
 # Fridge Magnets — Development Notes
 
-**Last updated:** 2026-09-17
+**Last updated:** 2026-09-20
 **Live:** https://fridge-magnets-three.vercel.app · **Repo:** izhan1506/Fridge-Magnets
 **Stack:** React 18 · Vite · TypeScript · Tailwind v4 · Supabase · MapLibre · motion (Framer)
 
@@ -8,16 +8,19 @@
 
 ## ⚠️ Read this first
 
-**The branch is merged.** `feat/case-study-and-perf` (17 commits) fast-forwarded
-onto `main` on 2026-09-17, so everything below is live via Vercel.
+Everything is on `main` and live — `feat/case-study-and-perf` was merged
+2026-09-17 and the landing page was rebuilt on 2026-09-20. There is no unmerged
+work.
 
-Reviewed before merging with: a clean `vite build`, a full-strict `tsc --noEmit`
-compared against the same check on `main` (identical 7 errors — the branch added
-none), a real-Chrome render of every new page at 5 widths, the geo math unit-run
-against the real coordinate collision in the database, and the payload/fridge-id
-claims re-measured against production data. One regression was found and fixed
-during review (`00083a5`): route exit transitions had stopped running because
-`<Suspense>` landed between `<AnimatePresence>` and the keyed `<Routes>`.
+Two standing rules, both learned the hard way:
+
+1. **Don't shrink the fridge to make it fit** (open issue 2). That fit has been
+   written and reverted twice.
+2. **Keep `npm run typecheck` passing** (open issue 7). The build strips types
+   without checking them, so that command is the only thing that reads them.
+
+The one outstanding action is the trip-photo backfill (open issue 1), which
+needs a service-role key and so has to be run by hand.
 
 ---
 
@@ -34,8 +37,10 @@ code looks right".
 | Session error handling | ✅ stale token + dead backend → error screen with retry, not an infinite spinner |
 | Pin ring layout | ✅ 0.9989km spacing on the real Karachi 4-pin collision, deterministic, 500/500 distinct, antimeridian-safe. At a pole the clamp collapses moved pins to lat ±85 (distinct in longitude only) — degenerate but harmless |
 | Boot bundle | ✅ CDP network trace on `/landingpage`: exactly 3 assets — entry (195 KB gzip), route chunk (4.1 KB), CSS (28 KB). maplibre and onnx-runtime not fetched |
-| Case study / landing pages | ✅ real render at 360/390/412/768/1280 — `scrollWidth == clientWidth` at every width, full text content present, zero console messages |
-| Hero hard-cut | ✅ no transition/animation on the images |
+| Case study page | ✅ real render at 360/390/412/768/1280 — `scrollWidth == clientWidth` at every width, full text content present, zero console messages |
+| Landing page layout | ✅ measured 2026-09-20 at 320/360/390/640/768/900/1024/1068/1280/1440/1700: no horizontal overflow at any width, nav wordmark on one line, nav links centred to 0px from lg, hero heading holds two lines |
+| Landing showcase geometry | ✅ asserted, not eyeballed: zero flanking magnets intersect the phone, exactly 2 are cropped by the page edge from lg up, phone centred to 0px at every width. 4 magnets from lg, 0 below |
+| Hero match cut | ✅ hard cut confirmed — `transition-duration: 0s`, opacity pinned at 1, exactly one frame visible at every sample. Holds ~867ms (3.00× the old 2600ms). Gated on all 8 frames loading: on Fast 3G it holds frame 0 and makes **0 cuts before the set arrives**, then releases. Reduced motion holds frame 0 and never advances |
 | **Native share sheet** | n/a — that feature was reverted |
 | Route exit transitions | ✅ A/B against a build of `main`, DOM sampled every 60ms: old screen holds t=61→301ms, new screen mounts at t=362ms on both |
 | **Anything on a real Android device** | ❌ **never** |
@@ -129,7 +134,7 @@ code looks right".
 
 | Path | Auth | Notes |
 | --- | --- | --- |
-| `/landingpage`, `/landing` | public | Marketing. Wordmark "My Fridge Tales"; centred hero over a contained 16/9 match-cut photo panel |
+| `/landingpage`, `/landing` | public | Marketing. Wordmark "My Fridge Tales"; centred hero ("Collect a magnet from every trip") over a 16/9 match-cut photo panel, then the phone-and-magnets showcase, then stats / how-it-works / map / why / CTA |
 | `/casestudy`, `/case-study` | public | Product design case study |
 | `/designsystem` | public | Component showcase |
 | `/welcome`, `/auth` | public-only | Signed-in users get bounced to `/fridge` |
@@ -157,6 +162,18 @@ render inside the 402pt phone frame.**
   so it scales with zoom. Pins sharing a coordinate fan onto 1km rings via
   `ringSlot()`. Those offsets are fabricated for legibility — a pin is not where
   that person is. The real fix is finer location at sign-up.
+- **The landing page composes the real app, not mockups of it.**
+  `fridge-showcase.tsx` builds its phone from the actual `FridgeIllustration`,
+  `BottomNavBar` and `GlassSquareIconButton`, and shows the fridge sized by
+  width with its base clipped — i.e. the real overflow from open issue 2. Don't
+  "correct" it into a fully-visible fridge; that would advertise a screen that
+  doesn't exist. Door magnets are positioned by their **centre** (`translate(-50%,-50%)`),
+  so adding one needs no per-image aspect-ratio arithmetic.
+- **`hero-stack.tsx` is a match cut, so the transition must stay a cut.** No
+  crossfade, no drift — frames are pre-mounted and toggled with `visibility`.
+  It also waits for all eight frames to load before starting; at 870ms a cycle
+  is shorter than the download on a slow link, and without the gate it cuts to
+  empty frames. If you change `CUT_MS`, re-check that gate.
 - **`lib/image.ts`** converts every user photo to WebP on capture. It is
   best-effort by design: every failure path returns the original blob, so
   optimisation can never be why a save fails. Safari <16 can't encode WebP and
@@ -206,6 +223,22 @@ render inside the 402pt phone frame.**
 - **`Network.responseReceived`'s `encodedDataLength` is headers-only.** Byte
   totals gathered there are nonsense; the URL list is still reliable, and real
   sizes come from the build output or `Network.loadingFinished`.
+- **`Runtime.evaluate` with `returnByValue` can't serialise a DOM node.**
+  `waitFor("document.querySelector('h1')")` waits forever because the result
+  comes back falsy even though the element exists. Always assert on a boolean or
+  a number — `!!document.querySelector(…)` or `.length`.
+- **Lazy images inside a `display:none` container never load**, so
+  `[...document.images].every(i => i.complete)` can never become true on a page
+  with responsive `hidden` blocks. Filter to visible images (`offsetParent !==
+  null`) before waiting on them.
+- **`Page.captureScreenshot` won't capture below the fold.** Clipping to a
+  section's `getBoundingClientRect()` without scrolling to it first returns a
+  blank image — it looks exactly like a section that failed to render. Scroll it
+  into view, then shoot.
+- **Assert geometry, don't eyeball it.** Overlap bugs in the showcase (cards
+  sitting on top of the phone at one breakpoint) were invisible in the
+  screenshots that mattered and obvious the moment rectangles were intersected
+  in code. Same for "is this centred" — compare against `clientWidth / 2`.
 - **Element ids built from display labels break `url(#…)`** — spaces and colons
   in an id silently kill SVG `clipPath`/gradient references.
 
@@ -219,6 +252,14 @@ render inside the 402pt phone frame.**
   `docs/setup/oauth/` has seven overlapping guides that should be collapsed.
 - `design/source-images/` holds the 19MB hero masters and is gitignored; the
   shipped copies are `public/hero/*.jpg`.
+- `public/magnets/*.webp` are five real cutouts from the owner's own fridge,
+  used on the landing page. **Only the owner's magnets** — the Storage bucket
+  also holds four other users' cutouts, which are not ours to put on a marketing
+  page. They were prepared by cropping to the **alpha bounding box** and then
+  re-encoding: 9.1MB of camera-resolution PNGs → 314KB. The crop matters as much
+  as the resize; background removal leaves so much transparent margin that the
+  subject filled only ~19-27% of each frame, so `object-contain` rendered them
+  far smaller than they should be.
 - Vercel auto-deploys `main`; branches get preview URLs.
 
 ---
