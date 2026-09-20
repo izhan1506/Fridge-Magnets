@@ -159,7 +159,8 @@ export function PinPreviewCard({
   const nav = useNavigate();
 
   const handleViewFridge = () => {
-    const fridgeId = generateFridgeId(fridge.profile.id);
+    // The stored column once it's backfilled; the legacy hash until then.
+    const fridgeId = fridge.profile.fridgeId ?? generateFridgeId(fridge.profile.id);
     console.log(`[PinPreviewCard] Button clicked! Navigating to /fridge/${fridgeId} (userId: ${fridge.profile.id})`);
     nav(`/fridge/${fridgeId}`, { state: { userId: fridge.profile.id } });
   };

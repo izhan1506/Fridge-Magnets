@@ -34,17 +34,17 @@ export const HERO_SHOTS: HeroShot[] = [
   { src: "/hero/hero-08.jpg", alt: "The same fridge on a terrace overlooking the Nile and the pyramids at sunset" },
 ];
 
-/** How long each location holds before the cut. ~870ms is a fast, deliberate
- *  rhythm — 3x the original 2600ms — so the full eight-location cycle runs in
- *  about 7s instead of 21s. */
-const CUT_MS = 870;
+/** How long each location holds before the cut. 580ms is a fast, deliberate
+ *  rhythm — 1.5x faster again than the previous 870ms, and 4.5x the
+ *  original 2600ms — so the full eight-location cycle runs in about 4.6s. */
+const CUT_MS = 580;
 
 export function HeroMatchCut({ className = "" }: { className?: string }) {
   const reduceMotion = useReducedMotion();
   const [index, setIndex] = useState(0);
 
   /* ── Don't cut to a frame that hasn't arrived ──
-     At 870ms a full cycle is ~7s, but the eight photographs take ~8s to
+     At 580ms a full cycle is ~4.6s, but the eight photographs take ~8s to
      download on a 1.6Mbps link — so the sequence outran the network and spent
      roughly half of the first cycle showing an empty panel where a photo should
      be (measured: 138 of 280 samples on Fast 3G). Holding on the first frame
@@ -74,7 +74,7 @@ export function HeroMatchCut({ className = "" }: { className?: string }) {
 
   return (
     <figure
-      className={`relative overflow-hidden rounded-3xl border border-border bg-card ${className}`}
+      className={`relative overflow-hidden rounded-[0.75rem] border border-border bg-card ${className}`}
       /* The source images are 1200×675, so a 16/9 frame crops nothing and the
          fridge lands on the same pixels in every shot — which is what keeps the
          cut registering as a match rather than a jump. */

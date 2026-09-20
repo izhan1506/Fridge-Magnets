@@ -273,11 +273,13 @@ function Specimen() {
 export function CaseStudy() {
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <div className="mx-auto w-full max-w-5xl px-5 md:px-8">
-        {/* ── Hero ── */}
+      {/* The hero gets a wider measure than the article body below it, so the
+          product shot can be big without squeezing the headline. The body
+          stays at max-w-5xl, which is the reading width. */}
+      <div className="mx-auto w-full max-w-7xl px-5 md:px-8">
         <header className="pb-16 pt-16 md:pb-24 md:pt-28">
           <p className="text-[11px] uppercase tracking-[0.24em] text-primary">Product design case study</p>
-          <div className="mt-8 grid items-center gap-10 md:grid-cols-[1.4fr_1fr]">
+          <div className="mt-8 grid items-center gap-10 md:grid-cols-[1.4fr_1fr] lg:grid-cols-[1fr_1.3fr]">
             <div>
               <h1 className="font-fridge text-6xl leading-[0.92] md:text-8xl">
                 Turn your<br />travels into<br /><span className="text-primary">tales.</span>
@@ -288,8 +290,23 @@ export function CaseStudy() {
                 other travellers can explore.
               </p>
             </div>
-            <div className="mx-auto w-44 md:w-full md:max-w-[220px]">
-              <FridgeIllustration className="w-full select-none" />
+            {/* The real app in the hand, rather than the fridge illustration —
+                the same shot the landing page's closing banner uses. The
+                drawing still appears further down inside PhoneMock, where it is
+                standing in for a screen rather than for the product. */}
+            <div className="mx-auto w-full max-w-[420px] min-w-0 md:max-w-none">
+              <img
+                src="/case-study/magnets.webp"
+                alt="A hand holding a phone with the app open, magnets stuck to the fridge door"
+                draggable={false}
+                /* The source has a solid #000 background — not transparency,
+                   despite the PNG carrying an alpha channel — so on this
+                   #171717 page it would read as a black box. screen blending
+                   maps pure black onto exactly the backdrop colour, which
+                   makes the surround disappear and the phone float. Browsers
+                   without mix-blend-mode just show the box. */
+                className="w-full select-none mix-blend-screen"
+              />
             </div>
           </div>
           <dl className="mt-14 grid grid-cols-2 gap-x-6 gap-y-8 border-t border-border/60 pt-8 sm:grid-cols-4">
@@ -299,7 +316,9 @@ export function CaseStudy() {
             <Meta label="Status" value="Pre-beta" />
           </dl>
         </header>
+      </div>
 
+      <div className="mx-auto w-full max-w-5xl px-5 md:px-8">
         {/* ── 01 ── */}
         <Section index="01" title="The premise">
           <Lede>

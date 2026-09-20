@@ -1,6 +1,7 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
+  color-scheme: dark;
   --font-size: 16px;
 
   /* ── Fridge · dark + orange color roles (app chrome) ── */
@@ -8,12 +9,20 @@
   --foreground: #f5f5f0;          /* on-surface */
   --card: #232323;
   --card-foreground: #f5f5f0;
+  /* A recessed panel: darker than --background, where --card is lighter.
+     Used by the landing page's map section so it reads as sunken into the
+     page instead of floating above it like the feature cards. */
+  --surface-sunken: #131313;
   --popover: #232323;
   --popover-foreground: #f5f5f0;
   --primary: #f46100;             /* bold orange */
   --primary-foreground: #ffffff;
   --primary-container: #3d2410;
   --on-primary-container: #ffd9b0;
+  /* Orange used as TEXT rather than as a fill. On the dark theme the brand
+     orange is already legible, so this is the brand orange. See the light
+     theme for why the token exists. */
+  --primary-ink: #f46100;
   --secondary: #ff6b4a;           /* warm coral, unchanged role */
   --secondary-foreground: #17190a;
   --secondary-container: #3d2018;
@@ -104,15 +113,71 @@
   --sidebar-ring: oklch(0.439 0 0);
 }
 
+/* ── Light theme ─────────────────────────────────────────────────────────────
+ * Opt-in, scoped: applied by setting data-theme="light" on an element, which
+ * re-declares the tokens for that subtree only. The landing page's footer
+ * toggle sets it on the page root, so switching cannot reach the app screens
+ * (the fridge, the map and the glass chrome are dark-only by design).
+ *
+ * :root above is the DARK theme and stays the default, so nothing that does
+ * not opt in changes. Note the unrelated `.dark` block above is dead shadcn
+ * scaffold — nothing applies it, and it is not this brand (it sets --primary
+ * to near-white rather than orange). Do not wire a theme switch to it.
+ *
+ * The orange is a brand constant and is identical in both themes; everything
+ * else flips.
+ */
+[data-theme="light"] {
+  color-scheme: light;
+
+  --background: #faf9f7;          /* warm off-white, not pure #fff */
+  --foreground: #1c1c1a;
+  --card: #ffffff;
+  --card-foreground: #1c1c1a;
+  --surface-sunken: #f1efea;
+  --popover: #ffffff;
+  --popover-foreground: #1c1c1a;
+  --primary: #f46100;             /* brand constant — unchanged */
+  --primary-foreground: #ffffff;
+  --primary-container: #ffe3c9;
+  --on-primary-container: #4a2200;
+  /* Orange used as TEXT. The brand orange manages only 3.04:1 on this
+     background — fine for the 67px headline word, a fail for the 11px
+     eyebrows. This darker orange reads 5.8:1 and keeps the hue. Fills
+     (buttons, the headline accent) stay --primary. */
+  --primary-ink: #a8410a;
+  --secondary: #e0472a;           /* darkened so it holds on white */
+  --secondary-foreground: #ffffff;
+  --secondary-container: #ffddd3;
+  --on-secondary-container: #4a1508;
+  --tertiary: #0f8f5f;            /* darkened teal for light surfaces */
+  --tertiary-foreground: #ffffff;
+  --tertiary-container: #c3f2dd;
+  --on-tertiary-container: #04301d;
+  --muted: #efedea;
+  --muted-foreground: #5e5c57;
+  --accent: #ffe3c9;
+  --accent-foreground: #a03f00;
+  --destructive: #c4321f;
+  --destructive-foreground: #ffffff;
+  --border: rgba(0, 0, 0, 0.14);
+  --input: transparent;
+  --input-background: #efedea;
+  --switch-background: #d6d3cd;
+  --ring: #f46100;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
+  --color-surface-sunken: var(--surface-sunken);
   --color-popover: var(--popover);
   --color-popover-foreground: var(--popover-foreground);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
+  --color-primary-ink: var(--primary-ink);
   --color-primary-container: var(--primary-container);
   --color-on-primary-container: var(--on-primary-container);
   --color-secondary: var(--secondary);

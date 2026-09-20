@@ -18,6 +18,9 @@ function profileFromRow(row: any): Profile {
     homeLng: row.home_lng,
     homeLabel: row.home_label,
     mapPublic: row.map_public,
+    // Null until migration 0004 + scripts/assign-fridge-ids.mjs have both run;
+    // callers fall back to generateFridgeId() while it is.
+    fridgeId: row.fridge_id ?? undefined,
   };
 }
 
@@ -306,19 +309,62 @@ export async function getPublicFridges(
   return fridges;
 }
 
+/** Postgres `undefined_column`, i.e. migration 0004 has not been run here. */
+const UNDEFINED_COLUMN = "42703";
+
 /**
  * Resolve a shareable fridge id (`fridge-0426`) to the fridge it names.
  *
- * generateFridgeId() is a one-way hash, so the user id can't be recovered from
- * the URL. Previously the only route to a fridge was the userId handed over in
- * router state by the map's preview card — which meant a refresh, a bookmark or
- * a link someone actually shared resolved to nothing. Since the id is derived
- * deterministically, we can hash the public profiles and find the match.
+ * Two paths, in order:
  *
- * Only public profiles are searchable, which is the behaviour you want: a
- * private fridge shouldn't be reachable by guessing ids.
+ * 1. `profiles.fridge_id`, a stored column with a uniqueness constraint
+ *    (migration 0004). This is the real answer: one indexed lookup, and two
+ *    fridges can never share an id.
+ * 2. Failing that, the legacy behaviour — hash every public profile's user id
+ *    and look for a match. `generateFridgeId()` is one-way, so the user id
+ *    can't be read out of the URL; scanning is the only way back.
+ *
+ * The fallback exists because the column is backfilled by a separate script
+ * (`scripts/assign-fridge-ids.mjs`, which needs the service-role key), so there
+ * is a window where rows have no fridge_id and this still has to work. It also
+ * carries the original bug: `abs(hash) % 10000` has no uniqueness guarantee, so
+ * if two public profiles collide the second one is unreachable. Once every row
+ * has a fridge_id, path 2 can go.
+ *
+ * Note path 2 also runs when the column exists but holds no match, not only
+ * when it is missing. That is deliberate: if the backfill had to move someone
+ * off their hashed id to break a collision, their old link still lands on them
+ * — unless somebody else now genuinely holds that id, in which case path 1
+ * already returned that person and we never got here.
+ *
+ * Only public profiles are searchable either way, which is the behaviour you
+ * want: a private fridge shouldn't be reachable by guessing ids.
  */
 export async function getFridgeByPublicId(fridgeId: string): Promise<PublicFridge | null> {
+  // 1. The stored column.
+  const { data: exact, error: exactError } = await supabase
+    .from("profiles")
+    .select("id")
+    .eq("fridge_id", fridgeId)
+    .eq("map_public", true)
+    .maybeSingle();
+
+  if (exact) return getFridge(exact.id);
+
+  // A missing column (pre-migration) must not be fatal — fall through to the
+  // hash scan. Anything else is a real error. Postgres 42703 is
+  // undefined_column; verified against this project, which answers a query for
+  // the not-yet-created column with
+  // {"code":"42703","message":"column profiles.fridge_id does not exist"}.
+  if (exactError) {
+    if (exactError.code !== UNDEFINED_COLUMN) {
+      console.error("[Store] Error resolving fridge id:", exactError);
+      throw exactError;
+    }
+    console.warn("[Store] profiles.fridge_id unavailable, falling back to the hash scan");
+  }
+
+  // 2. Legacy hash scan.
   const { data: profiles, error } = await supabase
     .from("profiles")
     .select("id")
