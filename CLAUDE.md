@@ -16,7 +16,7 @@ Two standing rules, both learned the hard way:
 
 1. **Don't shrink the fridge to make it fit** (open issue 2). That fit has been
    written and reverted twice.
-2. **Keep `npm run typecheck` passing** (open issue 7). The build strips types
+2. **Keep `npm run typecheck` passing** (see "Settled" below). The build strips types
    without checking them, so that command is the only thing that reads them.
 
 The one outstanding action is the trip-photo backfill (open issue 1), which
@@ -105,28 +105,37 @@ code looks right".
 6. **`ScreenHeading` is `text-[#171717]`** — byte-identical to `--background`, so
    the "Set your home base" title is dark-on-dark. Fix was written then reverted
    along with the glass bar.
-7. ~~**No typecheck.**~~ **Done.** `typescript`, `@types/react` and
-   `@types/react-dom` are devDependencies, `tsconfig.json` is checked in, and
-   `npm run typecheck` passes clean under full `strict`. **Keep it passing** —
-   the build strips types without checking them, so this command is the only
-   thing that ever reads them.
 
-   The 7 errors it originally surfaced (the identical set was on `main`, so the
-   landing/perf branch added none) are all fixed:
+---
 
-   - `AddMagnet.tsx` / `SetHomeBase.tsx` destructured `reverseGeocode()`'s
-     result without a null check. **Correction to an earlier note in this file
-     that called this a live crash: it isn't.** `CITIES` is a hardcoded
-     193-entry literal, so the `null` branch is unreachable today. The call
-     sites are guarded anyway, so it stays safe if that list ever becomes
-     data-loaded.
-   - `session.tsx` passed `store.signInWithGoogle()` (`void`, being a redirect
-     flow) into `loadFor(p: Profile | null)`, setting `profile` to `undefined`
-     rather than `null`. Now it just calls it; the profile arrives via
-     `onAuthStateChange` on the way back.
-   - `MapScreen.tsx` built a display-only `Profile` without `email`.
-   - `main.tsx` imports with an explicit `.tsx` extension — handled with
-     `allowImportingTsExtensions` rather than churning the source.
+## Settled, with the reasoning kept
+
+Recorded so nobody re-opens them or repeats the investigation.
+
+### Typecheck — settled 2026-09-17
+
+`typescript`, `@types/react` and
+`@types/react-dom` are devDependencies, `tsconfig.json` is checked in, and
+`npm run typecheck` passes clean under full `strict`. **Keep it passing** —
+the build strips types without checking them, so this command is the only
+thing that ever reads them.
+
+The 7 errors it originally surfaced (the identical set was on `main`, so the
+landing/perf branch added none) are all fixed:
+
+- `AddMagnet.tsx` / `SetHomeBase.tsx` destructured `reverseGeocode()`'s
+  result without a null check. **Correction to an earlier note in this file
+  that called this a live crash: it isn't.** `CITIES` is a hardcoded
+  193-entry literal, so the `null` branch is unreachable today. The call
+  sites are guarded anyway, so it stays safe if that list ever becomes
+  data-loaded.
+- `session.tsx` passed `store.signInWithGoogle()` (`void`, being a redirect
+  flow) into `loadFor(p: Profile | null)`, setting `profile` to `undefined`
+  rather than `null`. Now it just calls it; the profile arrives via
+  `onAuthStateChange` on the way back.
+- `MapScreen.tsx` built a display-only `Profile` without `email`.
+- `main.tsx` imports with an explicit `.tsx` extension — handled with
+  `allowImportingTsExtensions` rather than churning the source.
 
 ---
 
