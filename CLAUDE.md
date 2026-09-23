@@ -1,6 +1,6 @@
 # Fridge Magnets — Development Notes
 
-**Last updated:** 2026-09-22
+**Last updated:** 2026-09-23
 **Live:** https://fridge-magnets-three.vercel.app · **Repo:** izhan1506/Fridge-Magnets
 **Stack:** React 18 · Vite · TypeScript · Tailwind v4 · Supabase · MapLibre · motion (Framer)
 
@@ -44,6 +44,8 @@ code looks right".
 | 3D globe | ✅ boot trace: landing on `/landingpage` and not scrolling fetches **0** globe/three assets; the 231KB gzip chunk and its textures only arrive on scroll. No WebGL → SVG fallback and **0** globe bytes downloaded. `prefers-reduced-motion` holds it still while the control rotates |
 | Light theme | ✅ toggle flips every token, persists across reload, and 7 text roles pass WCAG AA in **both** themes. Brand orange is identical in both |
 | Production deploy (2026-09-22) | ✅ verified on the live URL, not just pushed: all 6 new assets serve as `image/webp` with matching byte sizes, globe renders with 13 markers, 0 failed requests, 0 console entries |
+| Trip photos in Storage | ✅ applied 2026-09-23: 3/3 moved, `select("*")` 7.65 MB → 0.01 MB, heaviest fridge 7.41 MB → 0.00 MB, all 3 objects fetch 200 afterwards |
+| `fridge_id` column | ✅ applied 2026-09-23: 16/16 profiles hold a stored id, 0 collisions, none moved off its hash. Resolver confirmed taking the column path, 15/15 round-trip |
 | **Native share sheet** | n/a — that feature was reverted |
 | Route exit transitions | ✅ A/B against a build of `main`, DOM sampled every 60ms: old screen holds t=61→301ms, new screen mounts at t=362ms on both |
 | **Anything on a real Android device** | ❌ **never** |
@@ -54,26 +56,13 @@ code looks right".
 
 ## Open issues, highest value first
 
-1. **Trip photos — code done, migration still to run.** New trip photos go to
-   Supabase Storage (`magnet-photos/<userId>/<magnetId>-trip.<ext>`, same bucket
-   and prefix as the cutouts, so no new bucket or RLS policy). **The 3 legacy
-   rows are still base64** until you run the backfill:
+1. ~~**Trip photos.**~~ **DONE 2026-09-23.** All 3 legacy rows moved from
+   base64-on-the-row into Storage. Measured before → after: `select("*")` over
+   every magnet **7.65 MB → 0.01 MB**, and the heaviest fridge (`40f5b3ca`)
+   **7.41 MB → 0.00 MB** per open. All three objects confirmed publicly
+   fetchable afterwards. `scripts/migrate-trip-photos.mjs` is idempotent, so
+   re-running is safe; `scripts/check-trip-photos.mjs` audits read-only.
 
-   ```
-   node scripts/check-trip-photos.mjs                    # read-only audit, anon key
-   SUPABASE_SERVICE_ROLE_KEY=... node scripts/migrate-trip-photos.mjs          # dry run
-   SUPABASE_SERVICE_ROLE_KEY=... node scripts/migrate-trip-photos.mjs --apply
-   ```
-
-   It needs the service-role key because the rows span three users and RLS
-   blocks the anon key. Idempotent, and it confirms each upload is publicly
-   readable before repointing the row. Current state: 17 magnets, 3 with a trip
-   photo, `select("*")` over all of them = **7.65 MB**; user `40f5b3ca`
-   downloads **7.41 MB** per fridge open.
-
-   Note the migration moves bytes verbatim — it does not re-encode. The Berlin
-   photo stays a 5.6 MB JPEG object; the win is that it leaves the row, so it's
-   fetched only when the story viewer opens it.
 2. **Fridge overflows the bottom nav by ~200px — WON'T FIX. Do not "fix" this
    again without asking.** The base of the appliance is cut off: measured 194px
    past the nav on a Pixel 7, 279px with browser chrome, 245px on a Galaxy S8,
@@ -92,25 +81,20 @@ code looks right".
    is no pure-CSS form — `aspect-ratio` + `max-height` clamps the height without
    narrowing the width, which just breaks the ratio. The real fix is a shorter
    fridge illustration, not a smaller one.
-3. **Fridge id — code shipped 2026-09-22, MIGRATION NOT YET RUN.**
-   `abs(hash) % 10000` → ~50% chance of a collision at ~118 users, and a
-   collision makes one fridge unreachable. 15 public profiles, 15 distinct ids,
-   **0 collisions** today.
+3. ~~**Fridge id space is 10,000.**~~ **DONE 2026-09-23.** Migration 0004 is
+   applied and `scripts/assign-fridge-ids.mjs --apply` has run: all **16**
+   profiles hold a stored `fridge_id`, 0 collisions, and every one kept the id
+   its hash already produced — so no shared link changed.
 
-   `supabase/migrations/0004_fridge_id.sql` adds the column, the uniqueness
-   constraint and allocation at signup. It has **not been applied** — it needs
-   the SQL Editor or a direct Postgres connection, because PostgREST can't do
-   DDL. Then `scripts/assign-fridge-ids.mjs --apply` backfills it (service-role
-   key; preserves every existing link, and says so loudly if one must change).
+   **The anon key sees 15 profiles, not 16.** One (`dcce0c6e`) is private, so
+   RLS hides it. Any future audit run on the anon key is a *lower bound* —
+   that is exactly why the backfill had to be collision-safe on its own rather
+   than trusting the "15 distinct ids" figure.
 
-   Safe to be in this half-state: `getFridgeByPublicId` prefers the column and
-   falls back to the legacy hash scan on Postgres **42703**, verified against
-   production — 15/15 profiles still resolve with the column absent. Once every
-   row has an id, the fallback can go.
+   `getFridgeByPublicId` now resolves through the column (verified: 15/15
+   round-trip, unknown ids still null). Its legacy hash-scan fallback is no
+   longer exercised and can be deleted once you're confident.
 
-   The backfill is deliberately **not** in the SQL: reproducing that JS hash
-   (int32 wraparound and all) in plpgsql would be a second implementation that
-   nothing checks against the first.
 4. **Android black-fridge bug — the original 2026-08 report, still unconfirmed.**
    Ruled out with evidence: SVG gradients render fine, the svg doesn't collapse,
    `aspect-ratio` is supported, and there is **no service worker in the repo at
