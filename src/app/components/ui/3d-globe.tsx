@@ -433,7 +433,7 @@ function Scene({ markers, config, onMarkerClick, onMarkerHover }: SceneProps) {
     // 3.0, not upstream's 3.5. At 45deg fov the visible half-height is
     // d*tan(22.5deg), so 3.5r left the sphere filling only 69% of the canvas.
     // 3.0r takes that to 80% while keeping the markers (which sit at
-    // MARKER_TOP = 1.0905r since the stems were halved) well inside the
+    // MARKER_TOP = 1.05r after the stems were shortened) well inside the
     // frustum — the visible half-height here is 1.243r.
     camera.position.set(0, 0, config.radius * 3.0);
     camera.lookAt(0, 0, 0);

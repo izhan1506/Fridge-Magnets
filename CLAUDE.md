@@ -107,13 +107,18 @@ code looks right".
    the "Set your home base" title is dark-on-dark. Fix was written then reverted
    along with the glass bar.
 
-7. ~~**The globe's 13 avatars are stock portraits.**~~ **FIXED 2026-09-23.**
-   Replaced with three of the owner's own magnets at the cities they came
-   from, and the stock portraits deleted from the repo. It is a selection, not
-   a claim of completeness — Prague and the second Oslo magnet are left off
-   because they cannot be shown without colliding: measured on a 170px-radius
-   globe, Prague lands 7.0px from Vienna, while Oslo/Berlin/Vienna are 14.6px
-   apart at their closest and stay clear at a 12px marker.
+7. **The globe's 13 avatars are stock portraits — REOPENED by request
+   2026-09-23.** They were briefly replaced with three of the owner's own
+   magnets, then reverted: the avatars are the intended look. They remain
+   photographs of people who are not users, pinned to cities where no fridge
+   exists, which is the one decorative fiction on a page that is otherwise
+   deliberately literal. Raised twice and decided twice — **do not "fix" this
+   again without asking.**
+
+   If it is ever revisited, the magnets version is in git (`28f0654`) and the
+   geometry is already solved: only Oslo/Berlin/Vienna can be shown at a 12px
+   marker, because Prague lands 7.0px from Vienna on a 170px-radius globe and
+   overlaps anything bigger.
 
 8. ~~**"Instagram stories" overstates what the app does.**~~ **FIXED
    2026-09-23.** Both the hero subheading and step three now say *posts*,

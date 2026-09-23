@@ -60,28 +60,28 @@ export const globeFallback = (
 /* ── Markers ─────────────────────────────────────────────────────────────── */
 
 /**
- * The owner's own magnets, each at the city it was actually brought back from.
+ * The thirteen cities and avatars from the component's own demo, self-hosted
+ * rather than hotlinked off assets.aceternity.com (602KB of source images comes
+ * to 19.5KB once they are sized for the ~12px they actually render at).
  *
- * These replaced the component demo's thirteen stock portraits, which were
- * photographs of people who are not users, pinned to cities where no fridge
- * exists. Everything else on this page is deliberately literal — no invented
- * user counts, no testimonials — so a row of invented faces was the one
- * decorative fiction on it.
- *
- * Three rather than thirteen is what the real collection supports. It is a
- * selection, not a claim of completeness: Prague and the second Oslo magnet
- * are left off because they cannot be shown without colliding. Measured at the
- * rotation below, on a 170px-radius globe: Prague lands 7.0px from Vienna, so
- * any marker above ~7px overlaps it, while Oslo/Berlin/Vienna are 14.6px apart
- * at their closest and stay clear at 12px.
- *
- * Only the owner's magnets are ever used here — the Storage bucket also holds
- * other users' cutouts, which are not ours to put on a marketing page.
+ * Note these are the demo's stock portraits, not this product's users — the
+ * fridges they imply do not exist. Everything else on this page is deliberately
+ * literal about that, so this is the one decorative claim on it.
  */
 const MARKERS: GlobeMarker[] = [
-  { lat: 59.9139, lng: 10.7522, src: "/magnets/oslo-viking.webp", label: "Oslo" },
-  { lat: 52.52, lng: 13.405, src: "/magnets/berlin.webp", label: "Berlin" },
-  { lat: 48.2082, lng: 16.3738, src: "/magnets/vienna.webp", label: "Vienna" },
+  { lat: 40.7128, lng: -74.006, src: "/globe/avatars/1.webp", label: "New York" },
+  { lat: 51.5074, lng: -0.1278, src: "/globe/avatars/2.webp", label: "London" },
+  { lat: 35.6762, lng: 139.6503, src: "/globe/avatars/3.webp", label: "Tokyo" },
+  { lat: -33.8688, lng: 151.2093, src: "/globe/avatars/4.webp", label: "Sydney" },
+  { lat: 48.8566, lng: 2.3522, src: "/globe/avatars/5.webp", label: "Paris" },
+  { lat: 28.6139, lng: 77.209, src: "/globe/avatars/6.webp", label: "New Delhi" },
+  { lat: 55.7558, lng: 37.6173, src: "/globe/avatars/7.webp", label: "Moscow" },
+  { lat: -22.9068, lng: -43.1729, src: "/globe/avatars/8.webp", label: "Rio de Janeiro" },
+  { lat: 31.2304, lng: 121.4737, src: "/globe/avatars/9.webp", label: "Shanghai" },
+  { lat: 25.2048, lng: 55.2708, src: "/globe/avatars/10.webp", label: "Dubai" },
+  { lat: -34.6037, lng: -58.3816, src: "/globe/avatars/11.webp", label: "Buenos Aires" },
+  { lat: 1.3521, lng: 103.8198, src: "/globe/avatars/12.webp", label: "Singapore" },
+  { lat: 37.5665, lng: 126.978, src: "/globe/avatars/13.webp", label: "Seoul" },
 ];
 /** Tuned to the page: transparent, dark earth, the primary orange as the halo. */
 const BASE_CONFIG: Globe3DConfig = {
@@ -99,14 +99,13 @@ const BASE_CONFIG: Globe3DConfig = {
   ambientIntensity: 0.6,
   pointLightIntensity: 1.5,
   backgroundColor: null,
-  // 12px. Upstream hardcodes the marker to 8px and never reads markerSize;
-  // that is wired up now. 12 is the largest size the three cities tolerate —
-  // their closest pair is 14.6px apart, leaving a 2.6px gap.
-  markerSize: 0.12,
+  // 10px. Upstream hardcodes the marker to 8px and never reads markerSize;
+  // that is wired up now, and the avatars need a little more than 8 to read.
+  markerSize: 0.1,
   // Puts the centroid of the four cities dead centre and facing the camera on
   // arrival, so every marker is visible before auto-rotation carries them off.
   // Solved numerically against three's Euler XYZ convention, not eyeballed.
-  initialRotation: { x: 0.9346, y: -1.8117 },
+  initialRotation: { x: 0.3498, y: -1.7425 },
 };
 
 // Frozen at module scope: Globe3D memoises on `config` identity, so a fresh
