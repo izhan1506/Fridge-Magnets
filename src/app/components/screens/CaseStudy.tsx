@@ -285,9 +285,9 @@ export function CaseStudy() {
                 Turn your<br />travels into<br /><span className="text-primary">tales.</span>
               </h1>
               <p className="mt-7 max-w-xl text-lg leading-relaxed text-foreground/85 md:text-xl">
-                Fridge is a mobile app that turns souvenir photos into magnets on a
-                shared, skeuomorphic refrigerator — and pins every trip to a world map
-                other travellers can explore.
+                My Fridge Tales is a mobile app that turns souvenir photos into
+                magnets on a shared, skeuomorphic refrigerator — and pins every trip to
+                a world map other travellers can explore.
               </p>
             </div>
             {/* The real app in the hand, rather than the fridge illustration —
@@ -350,7 +350,7 @@ export function CaseStudy() {
           <h3 className="pt-4 font-fridge text-2xl">Landscape</h3>
           <Body>
             Four categories already hold travel memories. Each is good at something
-            Fridge deliberately isn't, and each leaves the same thing out.
+            My Fridge Tales deliberately isn't, and each leaves the same thing out.
           </Body>
           <div className="grid gap-4 md:grid-cols-2">
             <Card eyebrow="Category" title="The camera roll">
@@ -374,7 +374,7 @@ export function CaseStudy() {
           <Body>
             The gap all four share: none treats the souvenir as the unit of memory, and
             none gives a small, finite, deliberately curated collection somewhere to
-            live. That's the space Fridge is aimed at.
+            live. That's the space My Fridge Tales is aimed at.
           </Body>
 
           <h3 className="pt-8 font-fridge text-2xl">Assumptions on the table</h3>
@@ -637,7 +637,7 @@ export function CaseStudy() {
         <footer className="border-t border-border/60 py-14">
           <div className="flex flex-col gap-8 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p className="font-fridge text-2xl">Fridge</p>
+              <p className="font-fridge text-2xl">My Fridge Tales</p>
               <p className="mt-1 text-muted-foreground">Turn your travels into tales.</p>
             </div>
             <dl className="grid grid-cols-2 gap-x-8 gap-y-4 text-sm sm:text-right">
