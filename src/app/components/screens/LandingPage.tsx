@@ -79,6 +79,50 @@ function Section({ children, className = "", id }: { children: ReactNode; classN
   return <section id={id} className={`py-20 md:py-28 ${className}`}>{children}</section>;
 }
 
+/** The three real screenshots behind the how-it-works steps. */
+const STEP_SHOTS = {
+  snap: "/steps/take-a-picture.webp",
+  place: "/steps/place-on-fridge.webp",
+  connect: "/steps/connect-instagram.webp",
+} as const;
+
+/**
+ * A how-it-works step: the screenshot fills a panel, and the label sits
+ * BELOW it, outside the panel — not a bordered card with a small icon inside.
+ *
+ * The shots are 360x446 (0.807), so `w-full` with no aspect box shows each one
+ * whole and lets the panel take its natural height. They are real captures of
+ * the app, not illustrations of it.
+ */
+function Step({
+  src,
+  alt,
+  title,
+  children,
+}: {
+  src: string;
+  alt: string;
+  title: string;
+  children: ReactNode;
+}) {
+  return (
+    <div>
+      <div className="overflow-hidden rounded-[0.75rem] bg-card">
+        <img
+          src={src}
+          alt={alt}
+          loading="lazy"
+          decoding="async"
+          draggable={false}
+          className="block w-full select-none"
+        />
+      </div>
+      <h3 className="mt-6 font-fridge text-xl leading-tight md:text-2xl">{title}</h3>
+      <p className="mt-2 leading-relaxed text-muted-foreground">{children}</p>
+    </div>
+  );
+}
+
 function Feature({ art, title, children }: { art: ReactNode; title: string; children: ReactNode }) {
   return (
     <div className="rounded-[0.75rem] border border-border bg-card p-7">
@@ -101,17 +145,6 @@ function Art({ children }: { children: ReactNode }) {
 }
 
 /* ── Illustrations ───────────────────────────────────────────────────────── */
-
-const artScan = (
-  <Art>
-    <rect x="32" y="14" width="56" height="60" rx="8" fill="none" stroke={STROKE} />
-    {[[36, 18, 1, 1], [84, 18, -1, 1], [36, 70, 1, -1], [84, 70, -1, -1]].map(([x, y, sx, sy], i) => (
-      <path key={i} d={`M${x} ${(y as number) + 9 * (sy as number)} L${x} ${y} L${(x as number) + 9 * (sx as number)} ${y}`}
-        fill="none" stroke="var(--primary)" strokeWidth="2.5" strokeLinecap="round" />
-    ))}
-    <circle cx="60" cy="44" r="12" fill={ART_SOLID} />
-  </Art>
-);
 
 const artPlace = (
   <Art>
@@ -141,29 +174,6 @@ const artStory = (
     <circle cx="60" cy="38" r="11" fill="color-mix(in srgb, var(--foreground) 14%, transparent)" />
     <rect x="44" y="58" width="32" height="5" rx="2.5" fill="color-mix(in srgb, var(--foreground) 16%, transparent)" />
     <rect x="50" y="68" width="20" height="5" rx="2.5" fill="color-mix(in srgb, var(--foreground) 10%, transparent)" />
-  </Art>
-);
-
-/**
- * Step three: the magnet linked to the post behind it.
- *
- * Deliberately not another rounded portrait rectangle — artPlace (a fridge)
- * and artStory (a phone) already are, and putting a third beside them made
- * steps two and three read as the same picture at 96px. This one is a story
- * ring with a play mark, tethered to a magnet, so the row has three distinct
- * silhouettes.
- */
-const artConnect = (
-  <Art>
-    {/* the magnet */}
-    <rect x="18" y="33" width="24" height="24" rx="5" fill={ART_SOLID} />
-    {/* the tether */}
-    <path d="M44 45 H58" stroke={STROKE} strokeWidth="2.5" strokeLinecap="round" strokeDasharray="4 4" />
-    {/* the story ring */}
-    <circle cx="82" cy="45" r="21" fill="none" stroke="var(--primary)" strokeWidth="3" />
-    <circle cx="82" cy="45" r="14" fill="color-mix(in srgb, var(--foreground) 14%, transparent)" />
-    {/* play */}
-    <path d="M78 39 L89 45 L78 51 Z" fill="var(--primary)" />
   </Art>
 );
 
@@ -290,19 +300,31 @@ export function LandingPage() {
             Three steps, and the hard one is automatic.
           </h2>
           <div className="mt-12 grid gap-5 md:grid-cols-3">
-            <Feature art={artScan} title="Take a picture of your magnet">
+            <Step
+              src={STEP_SHOTS.snap}
+              alt="The camera open on a Brussels fridge magnet, ready to shoot"
+              title="Take a picture of your magnet"
+            >
               Photograph it on your real fridge, or pick a photo you already have.
               The background then cuts itself out — that is the hard step, and you
               do not do it.
-            </Feature>
-            <Feature art={artPlace} title="Place it on your fridge">
+            </Step>
+            <Step
+              src={STEP_SHOTS.place}
+              alt="Five cut-out magnets arranged on the door of the digital fridge"
+              title="Place it on your fridge"
+            >
               Drop it anywhere on the door. Tilt it, overlap it, move it whenever you
               like — it's your fridge, not a grid.
-            </Feature>
-            <Feature art={artConnect} title="Connect your Instagram posts">
+            </Step>
+            <Step
+              src={STEP_SHOTS.connect}
+              alt="The share sheet open on a trip photo, ready to send to Instagram"
+              title="Connect your Instagram posts"
+            >
               Add the post or Reel behind the trip and it plays inline when someone
               taps the magnet.
-            </Feature>
+            </Step>
           </div>
         </Section>
 

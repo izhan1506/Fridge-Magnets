@@ -301,6 +301,10 @@ render inside the 402pt phone frame.**
   `docs/setup/oauth/` has seven overlapping guides that should be collapsed.
 - `design/source-images/` holds the 19MB hero masters and is gitignored; the
   shipped copies are `public/hero/*.jpg`.
+- `public/steps/*.webp` are three real captures of the app, one per
+  how-it-works step. They are 360x446 — roughly 1x in a ~350px slot, so they
+  are slightly soft on a retina screen. Re-export larger if higher-resolution
+  originals exist.
 - `public/magnets/*.webp` are five real cutouts from the owner's own fridge.
   Three of them (Oslo, Berlin, Vienna) are the globe's markers; the showcase
   that used all five is gone. **Only the owner's magnets** — the Storage bucket
