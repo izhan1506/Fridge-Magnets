@@ -107,18 +107,17 @@ code looks right".
    the "Set your home base" title is dark-on-dark. Fix was written then reverted
    along with the glass bar.
 
-7. **The globe's 13 avatars are stock portraits.** They come from the
-   component's demo and imply users and fridges that do not exist. Every other
-   claim on that page is deliberately literal — no invented user counts, no
-   testimonials — so this is the one decorative fiction on it, and it is live.
-   Swapping in the owner's own magnets or dropping to fewer markers are both
-   small changes; the markers are `MARKERS` in `globe-visual.tsx`.
+7. ~~**The globe's 13 avatars are stock portraits.**~~ **FIXED 2026-09-23.**
+   Replaced with three of the owner's own magnets at the cities they came
+   from, and the stock portraits deleted from the repo. It is a selection, not
+   a claim of completeness — Prague and the second Oslo magnet are left off
+   because they cannot be shown without colliding: measured on a 170px-radius
+   globe, Prague lands 7.0px from Vienna, while Oslo/Berlin/Vienna are 14.6px
+   apart at their closest and stay clear at a 12px marker.
 
-8. **"Instagram stories" overstates what the app does.** The hero subheading
-   and step three both say it, but the app takes a **post or Reel** link
-   (`AddMagnet.tsx`: "a post or Reel link plays inline"). Instagram Stories are
-   the ephemeral 24-hour format and are not what gets attached. The body copy
-   under step three is accurate; the headings are not.
+8. ~~**"Instagram stories" overstates what the app does.**~~ **FIXED
+   2026-09-23.** Both the hero subheading and step three now say *posts*,
+   which is what `AddMagnet` actually accepts.
 
 ---
 
@@ -298,7 +297,8 @@ render inside the 402pt phone frame.**
 - `design/source-images/` holds the 19MB hero masters and is gitignored; the
   shipped copies are `public/hero/*.jpg`.
 - `public/magnets/*.webp` are five real cutouts from the owner's own fridge.
-  **No longer used on the landing page** since the showcase was removed. **Only the owner's magnets** — the Storage bucket
+  Three of them (Oslo, Berlin, Vienna) are the globe's markers; the showcase
+  that used all five is gone. **Only the owner's magnets** — the Storage bucket
   also holds four other users' cutouts, which are not ours to put on a marketing
   page. They were prepared by cropping to the **alpha bounding box** and then
   re-encoding: 9.1MB of camera-resolution PNGs → 314KB. The crop matters as much

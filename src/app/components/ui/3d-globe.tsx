@@ -90,11 +90,12 @@ const DEFAULT_BUMP_TEXTURE = "/globe/earth-topology.webp";
  * Where a marker's stem starts and ends, in globe radii.
  *
  * Upstream runs the stem from 1.001r to 1.18r — a length of 0.179r, which at
- * this globe size is a long spike that reads as a stalk rather than a pin.
- * MARKER_TOP is half that: 1.001 + 0.179/2 = 1.0905.
+ * this globe size is a long spike that reads as a stalk rather than a pin, and
+ * which throws the marker far enough off the surface that it looks detached
+ * near the limb. 1.05 is 0.049r, about 27% of upstream's.
  */
 const MARKER_SURFACE = 1.001;
-const MARKER_TOP = 1.0905;
+const MARKER_TOP = 1.05;
 
 // ============================================================================
 // Utility Functions

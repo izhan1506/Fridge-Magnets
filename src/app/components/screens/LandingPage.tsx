@@ -266,7 +266,7 @@ export function LandingPage() {
             on the fridge, tie it back to the post you already made. */}
         <p className="mx-auto mt-7 max-w-2xl text-balance leading-relaxed text-muted-foreground md:text-lg">
           Collect magnets from your trip, place on your digital fridge and
-          connect them with your Instagram stories.
+          connect them to your Instagram posts.
         </p>
 
         {/* One route out of the hero, not two. The case study is still linked
@@ -299,7 +299,7 @@ export function LandingPage() {
               Drop it anywhere on the door. Tilt it, overlap it, move it whenever you
               like — it's your fridge, not a grid.
             </Feature>
-            <Feature art={artConnect} title="Connect your Instagram stories">
+            <Feature art={artConnect} title="Connect your Instagram posts">
               Add the post or Reel behind the trip and it plays inline when someone
               taps the magnet.
             </Feature>
