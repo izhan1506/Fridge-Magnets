@@ -106,10 +106,10 @@ function Step({
   children: ReactNode;
 }) {
   return (
-    /* 20% narrower than its column from md up, panel and label together so
+    /* 10% narrower than its column from md up, panel and label together so
        they stay aligned. Left at full width below md, where the grid is a
-       single column and 80% would just leave a ragged gap. */
-    <div className="md:max-w-[80%]">
+       single column and any inset would just leave a ragged gap. */
+    <div className="md:max-w-[90%]">
       <div className="overflow-hidden rounded-[0.75rem] bg-card">
         <img
           src={src}
