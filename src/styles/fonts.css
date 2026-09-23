@@ -16,3 +16,10 @@ body {
 .font-fridge {
   font-family: var(--font-fridge);
 }
+
+/* The body face, for headings that should NOT use the condensed display font.
+   Needed because theme.css sets font-family on h1-h4 directly, so a heading
+   cannot fall back to the body font on its own. */
+.font-body {
+  font-family: var(--font-chrome);
+}

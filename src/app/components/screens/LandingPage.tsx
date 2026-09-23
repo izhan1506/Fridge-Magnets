@@ -106,7 +106,10 @@ function Step({
   children: ReactNode;
 }) {
   return (
-    <div>
+    /* 20% narrower than its column from md up, panel and label together so
+       they stay aligned. Left at full width below md, where the grid is a
+       single column and 80% would just leave a ragged gap. */
+    <div className="md:max-w-[80%]">
       <div className="overflow-hidden rounded-[0.75rem] bg-card">
         <img
           src={src}
@@ -117,7 +120,11 @@ function Step({
           className="block w-full select-none"
         />
       </div>
-      <h3 className="mt-6 font-fridge text-xl leading-tight md:text-2xl">{title}</h3>
+      {/* Body face, not the condensed display one, and normal-case: the h3
+          rule in theme.css sets BOTH font-family and text-transform, so the
+          capitalize has to be undone here too or it reads as Title Case In A
+          Body Font. Size is unchanged. */}
+      <h3 className="mt-6 font-body text-xl leading-snug normal-case md:text-2xl">{title}</h3>
       <p className="mt-2 leading-relaxed text-muted-foreground">{children}</p>
     </div>
   );
