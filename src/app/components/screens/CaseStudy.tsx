@@ -531,14 +531,23 @@ export function CaseStudy() {
             <div className="mt-6">
               <BeforeAfter
                 before={<FitDiagram fits={false} />} after={<FitDiagram fits />}
-                beforeLabel="Width-driven sizing: the fridge runs past the viewport and behind the nav bar, cropping its base."
-                afterLabel="Fitted to the smaller of the two axes. The whole object is always visible, at the cost of side margins."
+                beforeLabel="What ships: width-driven sizing. The fridge runs past the viewport and behind the nav bar, cropping its base by around 200px."
+                afterLabel="What was built and rejected: fitted to the smaller axis. The whole object is visible, but it shrinks to ~315px of a 412px screen and sits in wide empty margins."
               />
             </div>
             <Body>
-              The resolution was to let whichever axis runs out first decide the size,
-              and accept a narrower fridge on tall screens. Losing width was the cheaper
-              sacrifice — a cropped appliance stops reading as an appliance.
+              The obvious fix is to let whichever axis runs out first decide the size.
+              It was built twice, and reverted twice. Because the illustration is
+              2.375&times; taller than wide, fitting it whole means deriving its width
+              from the available height — which shrinks it to roughly 315px of a 412px
+              screen and strands it in empty margins either side.
+            </Body>
+            <Body>
+              So the shipped answer is the uncomfortable one: the fridge stays big and
+              its base runs off the bottom. A cropped appliance still reads as an
+              appliance; a small one centred in dead space reads as a diagram of one.
+              The real fix is a shorter illustration, not a smaller one — which is a
+              drawing problem, not a layout problem, and it is still open.
             </Body>
           </div>
 
@@ -577,7 +586,10 @@ export function CaseStudy() {
             </Card>
             <Card eyebrow="Data" title="Stop over-fetching">
               Opening the map pulled every other user's full-resolution trip photos to
-              render a name and a count. The list query now asks only for what it draws.
+              render a name and a count. The list query now asks only for what it draws,
+              and the photos themselves moved out of the database rows into object
+              storage: fetching every magnet went from 7.65 MB to 0.01 MB, and the
+              heaviest single fridge from 7.41 MB per open to nothing.
             </Card>
             <Card eyebrow="Images" title="Convert on the way in">
               Every photo is re-encoded to WebP at capture, keeping transparency for the

@@ -196,21 +196,18 @@ export function LandingPage() {
        behind /fridge and /map are dark-only by design. */
     <div data-theme={theme} className="min-h-screen bg-background text-foreground">
       {/* ── Nav ──
-          Three tracks, so the wordmark is centred on the page rather than
-          centred in whatever space the side groups leave over. The nav links
-          are anchors to sections that genuinely exist further down. */}
+          Two tracks: mark and wordmark left, actions right. The section links
+          that used to sit centred here are gone; the sections keep their ids,
+          so #how / #map / #why still work as deep links, and the case study is
+          still reached from the footer. */}
       <header className="sticky top-0 z-30 border-b border-border/50 bg-background/80 backdrop-blur-[10px]">
-        {/* Below lg this collapses to a two-track flex row — wordmark left,
-            actions right, links hidden — because there is no room for the link
-            group. The switch is at lg, not md: at exactly 768px the four links
-            plus the actions overflow the page by 8px. */}
-        <nav className="mx-auto flex w-full max-w-6xl items-center justify-between gap-2 px-4 py-4 sm:gap-3 sm:px-5 md:px-8 lg:grid lg:grid-cols-[1fr_auto_1fr] lg:gap-4">
+        <nav className="mx-auto flex w-full max-w-6xl items-center justify-between gap-2 px-4 py-4 sm:gap-3 sm:px-5 md:px-8">
           {/* A step down below sm: "My Fridge Tales" plus "Log in" plus the
               pill overflows a 360px screen by 3px at text-xl. */}
           {/* The app's own home-screen icon, shipped small: /app-icon.png is a
               203KB 496px PNG for the manifest, which is a lot to fetch for a
               36px mark, so this is a 3KB 128px WebP of the same artwork. */}
-          <Link to="/landingpage" className="flex items-center gap-2.5 lg:justify-self-start">
+          <Link to="/landingpage" className="flex items-center gap-2.5">
             <img
               src={LOGO_MARK}
               alt=""
@@ -231,17 +228,7 @@ export function LandingPage() {
             </span>
           </Link>
 
-          {/* Centred on the page, not in the leftover space: the two outer
-              tracks are both 1fr, so the auto middle track lands on the page's
-              centre line regardless of how wide the wordmark or actions are. */}
-          <div className="hidden items-center gap-7 text-muted-foreground lg:flex lg:justify-self-center">
-            <a href="#how" className="whitespace-nowrap transition hover:text-foreground">How it works</a>
-            <a href="#map" className="whitespace-nowrap transition hover:text-foreground">The map</a>
-            <a href="#why" className="whitespace-nowrap transition hover:text-foreground">Why it's different</a>
-            <Link to="/casestudy" className="whitespace-nowrap transition hover:text-foreground">Case study</Link>
-          </div>
-
-          <div className="flex items-center gap-1 lg:justify-self-end lg:gap-4">
+          <div className="flex items-center gap-1 lg:gap-4">
             {/* Below 360px the longer wordmark, "Log in" and the pill can't all
                 fit. The pill wins: /auth handles signing in as well as signing
                 up, so nothing becomes unreachable. */}
