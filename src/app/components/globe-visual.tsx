@@ -197,7 +197,11 @@ export function GlobeVisual() {
   return (
     // aspect-square reserves the box up front, so the fallback, the loading
     // state and the globe all occupy exactly the same space — nothing reflows.
-    <div ref={hostRef} className="relative aspect-square w-full">
+    /* isolate: drei's Html markers carry very large inline z-indexes. Without a
+       stacking context here they paint over the sticky nav; with one, the whole
+       globe — markers included — stays behind the page chrome no matter what
+       z-index the library picks. */
+    <div ref={hostRef} className="relative isolate aspect-square w-full">
       {near ? (
         <GlobeBoundary fallback={<CenteredFallback />}>
           <Suspense fallback={<CenteredFallback />}>

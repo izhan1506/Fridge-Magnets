@@ -228,6 +228,11 @@ function Marker({
           center
           sprite
           distanceFactor={10}
+          /* drei defaults this to [16777271, 0] and writes an inline z-index of
+             ~8.4 million on every marker, which paints them over the page's
+             sticky nav (z-30). Capped low here; globe-visual.tsx also isolates
+             the container so nothing inside can escape that stacking context. */
+          zIndexRange={[10, 0]}
           style={{
             pointerEvents: isVisible ? "auto" : "none",
             opacity: isVisible ? 1 : 0,
@@ -495,7 +500,7 @@ function Scene({ markers, config, onMarkerClick, onMarkerHover }: SceneProps) {
 
 function LoadingFallback() {
   return (
-    <Html center>
+    <Html center zIndexRange={[10, 0]}>
       <div className="flex shrink-0 flex-col items-center gap-3">
         <span className="inline-block shrink-0 text-sm text-neutral-400">
           Loading globe...

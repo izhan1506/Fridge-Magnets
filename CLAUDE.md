@@ -280,6 +280,16 @@ render inside the 402pt phone frame.**
   sitting on top of the phone at one breakpoint) were invisible in the
   screenshots that mattered and obvious the moment rectangles were intersected
   in code. Same for "is this centred" — compare against `clientWidth / 2`.
+- **drei's `Html` paints over everything by default.** `zIndexRange` defaults
+  to `[16777271, 0]`, and it writes an inline z-index of ~8.4 million on every
+  marker — seven orders of magnitude above the landing nav's `z-30`, so the
+  globe's avatars rendered on top of the header. Fixed in two places: the range
+  is capped to `[10, 0]`, and the globe container carries `isolate` so nothing
+  inside it can escape that stacking context whatever the library does.
+- **When testing overlap, sample a point inside BOTH rects.** Checking a
+  marker's *centre* against the nav band reported a false failure here: the
+  marker's top was inside the band but its centre was 6px below it, so
+  `elementFromPoint` answered about the wrong place entirely.
 - **A 200 from Vercel proves nothing about an asset.** The SPA's catch-all
   rewrite serves `index.html` for any unknown path, so a missing file returns
   `200 text/html`. Check `content-type` against a known-bad control path.
