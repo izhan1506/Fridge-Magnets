@@ -99,9 +99,9 @@ const BASE_CONFIG: Globe3DConfig = {
   ambientIntensity: 0.6,
   pointLightIntensity: 1.5,
   backgroundColor: null,
-  // 10px. Upstream hardcodes the marker to 8px and never reads markerSize;
-  // that is wired up now, and the avatars need a little more than 8 to read.
-  markerSize: 0.1,
+  // 40 CSS px, the same for every marker now that they are a flat overlay
+  // rather than a distance-scaled 3D element. Large enough that a face reads.
+  markerSize: 0.4,
   // Puts the centroid of the four cities dead centre and facing the camera on
   // arrival, so every marker is visible before auto-rotation carries them off.
   // Solved numerically against three's Euler XYZ convention, not eyeballed.

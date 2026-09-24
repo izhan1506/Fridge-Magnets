@@ -280,6 +280,12 @@ render inside the 402pt phone frame.**
   sitting on top of the phone at one breakpoint) were invisible in the
   screenshots that mattered and obvious the moment rectangles were intersected
   in code. Same for "is this centred" — compare against `clientWidth / 2`.
+- **drei's `Html` in `transform` mode scales with camera distance.** With
+  `transform` + `distanceFactor` each marker is a CSS 3D-transformed element
+  sized by its depth, so thirteen nominally-10px avatars measured 17-31px and
+  the transform softened the images. The globe uses plain (2D overlay) `Html`
+  instead: every marker is the same CSS pixel size and crisp. Far-side markers
+  are still hidden by the dot-product check in `Marker`, not by depth testing.
 - **drei's `Html` paints over everything by default.** `zIndexRange` defaults
   to `[16777271, 0]`, and it writes an inline z-index of ~8.4 million on every
   marker — seven orders of magnitude above the landing nav's `z-30`, so the

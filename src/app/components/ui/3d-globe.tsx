@@ -223,11 +223,16 @@ function Marker({
 
       {/* Circular image at the top */}
       <group ref={imageGroupRef} position={topPosition}>
+        {/* Plain overlay, NOT `transform` mode.
+            In transform mode drei renders the avatar as a CSS 3D-transformed
+            element scaled by its distance from the camera, so markers come out
+            at different sizes — measured 17-31px for a nominal 10px one — and
+            the 3D transform softens the image. Projecting to a 2D screen point
+            instead gives every avatar the same size and a crisp, unscaled DOM
+            element. Depth is still handled: the dot-product check above hides
+            markers on the far side. */}
         <Html
-          transform
           center
-          sprite
-          distanceFactor={10}
           /* drei defaults this to [16777271, 0] and writes an inline z-index of
              ~8.4 million on every marker, which paints them over the page's
              sticky nav (z-30). Capped low here; globe-visual.tsx also isolates
@@ -241,15 +246,17 @@ function Marker({
         >
           <div
             className={cn(
-              "cursor-pointer overflow-hidden rounded-full bg-neutral-900 shadow-lg transition-transform duration-200",
-              hovered && "scale-125 shadow-xl ring-1 ring-white/50",
+              // ring + soft shadow so the avatar reads as a pin head sitting
+              // above the globe rather than a flat sticker on it.
+              "cursor-pointer overflow-hidden rounded-full bg-neutral-900 ring-2 ring-white/75 shadow-[0_2px_10px_rgba(0,0,0,0.55)] transition-transform duration-200",
+              hovered && "scale-110 ring-white",
             )}
             style={{
               // `defaultSize` (config.markerSize) and `marker.size` are both
               // plumbed this far upstream and then dropped on the floor — the
               // size was hardcoded to 8px, so neither knob did anything. Read
-              // here, at the 100x scale that makes upstream's 0.06 default come
-              // out as the 6px it was evidently meant to be.
+              // here at a 100x scale. No longer in transform mode, so these are
+              // true CSS pixels, identical for every marker whatever its depth.
               width: `${(marker.size ?? defaultSize) * 100}px`,
               height: `${(marker.size ?? defaultSize) * 100}px`,
             }}
