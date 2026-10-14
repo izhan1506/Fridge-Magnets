@@ -24,6 +24,11 @@ const MapScreen = lazy(() =>
 const AddMagnet = lazy(() =>
   import("./components/screens/AddMagnet").then((m) => ({ default: m.AddMagnet })),
 );
+/* Throwaway prototype, lazy like the other full-width pages so none of it
+ * reaches the boot bundle. */
+const IphoneDuo = lazy(() =>
+  import("./components/screens/IphoneDuo").then((m) => ({ default: m.IphoneDuo })),
+);
 const DesignSystem = lazy(() =>
   import("./components/screens/DesignSystem").then((m) => ({ default: m.DesignSystem })),
 );
@@ -128,6 +133,10 @@ function Router() {
               into the signed-out redirect. */}
           <Route path="/casestudy" element={<CaseStudy />} />
           <Route path="/case-study" element={<CaseStudy />} />
+          <Route path="/iphone-duo" element={<IphoneDuo />} />
+          {/* The URL was first written as /ipjone-duo; aliased so a link shared
+              with that spelling still lands somewhere. */}
+          <Route path="/ipjone-duo" element={<IphoneDuo />} />
           <Route path="/landingpage" element={<LandingPage />} />
           <Route path="/landing" element={<LandingPage />} />
           <Route path="/welcome" element={<PublicOnly><Welcome /></PublicOnly>} />
@@ -150,7 +159,7 @@ function AppLayout() {
   const location = useLocation();
   /* Wide editorial/reference pages render full-bleed; everything else is the
      phone app and stays inside the 402pt frame. */
-  const isFullWidth = ["/designsystem", "/casestudy", "/case-study", "/landingpage", "/landing"].includes(
+  const isFullWidth = ["/designsystem", "/casestudy", "/case-study", "/landingpage", "/landing", "/iphone-duo", "/ipjone-duo"].includes(
     location.pathname,
   );
 
