@@ -20,13 +20,22 @@ import { FridgeIllustrationDuo } from "../fridge-illustration-duo";
 const OUTER = { w: 466, h: 678, label: "Folded · 5.4″ · 1398×2034 @3x" };
 const INNER = { w: 604, h: 725, label: "Unfolded · 7.6″ · 1812×2176 @3x (assumed)" };
 
-/** Stand-in magnets, placed as a percentage of the door like the real screen. */
+/**
+ * Stand-in magnets. All one size, and all clear of the handles.
+ *
+ * The same array renders in both states, so each magnet has to miss two
+ * different handle layouts: the folded door's single groove at 11.5-14% of the
+ * width, and the duo's pair at 45.5-46.8% and 53.2-54.5% either side of the
+ * fold. At SIZE 18 (half-width 9) that leaves two usable bands for a centre —
+ * 24-34% and 66-90% — which is where these five sit.
+ */
+const SIZE = 18;
 const MAGNETS = [
-  { src: "/magnets/oslo-viking.webp", x: 30, y: 26, size: 19, rot: -6 },
-  { src: "/magnets/berlin.webp", x: 64, y: 21, size: 17, rot: 5 },
-  { src: "/magnets/prague.webp", x: 44, y: 44, size: 15, rot: -3 },
-  { src: "/magnets/vienna.webp", x: 70, y: 52, size: 18, rot: 7 },
-  { src: "/magnets/oslo-plate.webp", x: 26, y: 58, size: 20, rot: 3 },
+  { src: "/magnets/oslo-viking.webp", x: 27, y: 22, rot: -5 },
+  { src: "/magnets/oslo-plate.webp", x: 30, y: 47, rot: 3 },
+  { src: "/magnets/prague.webp", x: 26, y: 71, rot: -3 },
+  { src: "/magnets/berlin.webp", x: 72, y: 27, rot: 4 },
+  { src: "/magnets/vienna.webp", x: 74, y: 58, rot: -4 },
 ];
 
 function Screen({ open }: { open: boolean }) {
@@ -51,20 +60,30 @@ function Screen({ open }: { open: boolean }) {
             <FridgeIllustration className="w-full select-none" />
           )}
           {MAGNETS.map((m) => (
-            <img
+            /* Each magnet gets the SAME square box and is contained inside it,
+               rather than sharing a width. The cutouts have very different
+               aspect ratios — a round coin against a wide number plate — so
+               equal width makes the plate read as much the bigger object. A
+               shared box means none of them exceeds the same footprint. */
+            <span
               key={m.src}
-              src={m.src}
-              alt=""
-              draggable={false}
-              className="absolute select-none"
+              className="absolute block select-none"
               style={{
                 left: `${m.x}%`,
                 top: `${m.y}%`,
-                width: `${m.size}%`,
+                width: `${SIZE}%`,
+                aspectRatio: "1 / 1",
                 transform: `translate(-50%, -50%) rotate(${m.rot}deg)`,
                 filter: "drop-shadow(0 4px 6px rgba(0,0,0,0.35))",
               }}
-            />
+            >
+              <img
+                src={m.src}
+                alt=""
+                draggable={false}
+                className="h-full w-full select-none object-contain"
+              />
+            </span>
           ))}
           {/* The fold, only when open. */}
           {open && (
